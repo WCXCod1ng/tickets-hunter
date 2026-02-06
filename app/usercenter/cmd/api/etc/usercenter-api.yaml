@@ -1,3 +1,17 @@
 Name: usercenter-api
 Host: 0.0.0.0
 Port: 8888
+
+Auth:
+  AccessSecret: "dev-secret-key"
+  AccessExpire: 3600
+
+UserCenterRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+      - 127.0.0.1:22379
+      - 127.0.0.1:32379
+    Key: usercenter.rpc
+
+Timeout: 10000

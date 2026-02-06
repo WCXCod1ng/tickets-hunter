@@ -14,6 +14,8 @@ import (
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var configFile = flag.String("f", "etc/usercenter.yaml", "the config file")

@@ -7,7 +7,7 @@ type RegisterReq struct {
 }
 
 type LoginRegisterResp struct {
-	UserId       int64  `json:"user_id"`
+	Id           int64  `json:"id"`
 	Token        string `json:"token"`
 	TokenExpire  int64  `json:"token_expire"`
 	RefreshAfter int64  `json:"refresh_after"`

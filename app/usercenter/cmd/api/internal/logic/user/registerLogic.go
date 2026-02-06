@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"tickets-hunter/app/usercenter/cmd/rpc/usercenter/rpc"
 
 	"tickets-hunter/app/usercenter/cmd/api/internal/svc"
 	"tickets-hunter/app/usercenter/cmd/api/internal/types"
@@ -24,7 +25,20 @@ func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Register
 }
 
 func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.LoginRegisterResp, err error) {
-	// todo: add your logic here and delete this line
+	reqRpc := &rpc.RegisterReq{
+		Mobile:   req.Mobile,
+		Password: req.Password,
+	}
+	respRpc, err := l.svcCtx.UserCenterRpc.Register(l.ctx, reqRpc)
+	if err != nil {
+		return nil, err
+	}
 
+	resp = &types.LoginRegisterResp{}
+
+	resp.Id = respRpc.Id
+	resp.Token = respRpc.Token
+	resp.TokenExpire = respRpc.TokenExpire
+	err = nil
 	return
 }
