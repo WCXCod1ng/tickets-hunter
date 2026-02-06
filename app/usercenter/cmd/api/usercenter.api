@@ -1,0 +1,66 @@
+syntax = "v1"
+
+info(
+	title: "用户中心服务"
+	desc: "包含注册、登录、用户信息获取"
+	author: "fleabane"
+	version: "v1"
+)
+
+type (
+	// 注册请求
+	RegisterReq {
+		Mobile   string `json:"mobile"`
+		Password string `json:"password"`
+	}
+	// 注册/登录响应
+	LoginRegisterResp {
+		UserId       int64  `json:"user_id"`
+		Token        string `json:"token"`
+		TokenExpire  int64  `json:"token_expire"`
+		RefreshAfter int64  `json:"refresh_after"`
+	}
+
+	// 登录请求
+	LoginReq {
+		Mobile   string `json:"mobile"`
+		Password string `json:"password"`
+	}
+
+	// 用户信息响应
+	UserDetailResp {
+		Id       int64  `json:"id"`
+		Mobile   string `json:"mobile"`
+		Nickname string `json:"nickname"`
+		Sex      int64  `json:"sex"`
+		Avatar   string `json:"avatar"`
+		Info     string `json:"info"`
+	}
+)
+
+// 不需要登录验证的接口
+@server(
+	prefix: usercenter/v1
+	group: user
+)
+service usercenter-api {
+	@doc "用户注册"
+	@handler register
+	post /user/register (RegisterReq) returns (LoginRegisterResp)
+	
+	@doc "用户登录"
+	@handler login
+	post /user/login (LoginReq) returns (LoginRegisterResp)
+}
+
+// 需要登录验证的接口
+@server(
+	prefix: usercenter/v1
+	group: user
+	jwt: Auth // 开启JWT认证，配置中需对应 Auth.AccessSecret
+)
+service usercenter-api {
+	@doc "获取用户信息"
+	@handler detail
+	post /user/detail returns (UserDetailResp)
+}

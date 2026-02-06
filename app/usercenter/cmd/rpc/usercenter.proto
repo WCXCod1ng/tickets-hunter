@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package usercenter;
+
+option go_package = "usercenter/rpc";
+
+message RegisterReq {
+  string mobile = 1;
+  string password = 2;
+}
+
+message RegisterResp {
+  int64   id = 1;
+  string  token = 2;
+  int64   token_expire = 3;
+}
+
+message LoginReq {
+  string mobile = 1;
+  string password = 2;
+}
+
+message LoginResp {
+  int64   id = 1;
+  string  token = 2;
+  int64   token_expire = 3;
+  int64   refresh_after = 4;
+}
+
+message DetailReq {
+}
+
+message DetailResp {
+  int64   id = 1;
+  string  mobile = 2;
+  string  nickname = 3;
+  int32   sex = 4;
+  string  avatar = 5;
+  string  info = 6;
+}
+
+
+service UserCenter {
+  rpc register(RegisterReq) returns (RegisterResp);
+  rpc login(LoginReq) returns (LoginResp);
+  rpc detail(DetailReq) returns (DetailResp);
+}
