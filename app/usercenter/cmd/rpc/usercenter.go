@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"tickets-hunter/common/interceptor"
 
 	"tickets-hunter/app/usercenter/cmd/rpc/internal/config"
 	"tickets-hunter/app/usercenter/cmd/rpc/internal/server"
@@ -35,6 +36,9 @@ func main() {
 		}
 	})
 	defer s.Stop()
+
+	// 添加全局错误处理中间件
+	s.AddUnaryInterceptors(interceptor.ServerErrorInterceptor)
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
 	s.Start()

@@ -1,66 +1,69 @@
 syntax = "v1"
 
-info(
-	title: "用户中心服务"
-	desc: "包含注册、登录、用户信息获取"
-	author: "fleabane"
+info (
+	title:   "用户中心服务"
+	desc:    "包含注册、登录、用户信息获取"
+	author:  "fleabane"
 	version: "v1"
 )
 
 type (
 	// 注册请求
 	RegisterReq {
-		Mobile   string `json:"mobile"`
-		Password string `json:"password"`
+		Mobile   string `json:"mobile,optional" validate:"required"`
+		Password string `json:"password,optional" validate:"required,min=6"`
+		Nickname string `json:"nickname,optional" validate:"required,min=5,max=20"`
+		Sex      int64  `json:"sex,optional" default:"0" validate:"oneof=0 1 2"` // 0未知 1男 2女
+		Avatar   string `json:"avatar,optional" validate:"omitempty,url"`
+		Info     string `json:"info,optional" validate:"omitempty,max=255"`
 	}
 	// 注册/登录响应
 	LoginRegisterResp {
-		Id           int64  `json:"id"`
-		Token        string `json:"token"`
-		TokenExpire  int64  `json:"token_expire"`
-		RefreshAfter int64  `json:"refresh_after"`
+		Id           int64  `json:"id,optional"`
+		Token        string `json:"token,optional"`
+		TokenExpire  int64  `json:"token_expire,optional"`
+		RefreshAfter int64  `json:"refresh_after,optional"`
 	}
-
 	// 登录请求
 	LoginReq {
-		Mobile   string `json:"mobile"`
-		Password string `json:"password"`
+		Mobile   string `json:"mobile,optional"`
+		Password string `json:"password,optional"`
 	}
-
 	// 用户信息响应
 	UserDetailResp {
-		Id       int64  `json:"id"`
-		Mobile   string `json:"mobile"`
-		Nickname string `json:"nickname"`
-		Sex      int64  `json:"sex"`
-		Avatar   string `json:"avatar"`
-		Info     string `json:"info"`
+		Id       int64  `json:"id,optional"`
+		Mobile   string `json:"mobile,optional"`
+		Nickname string `json:"nickname,optional"`
+		Sex      int64  `json:"sex,optional"`
+		Avatar   string `json:"avatar,optional"`
+		Info     string `json:"info,optional"`
 	}
 )
 
 // 不需要登录验证的接口
-@server(
+@server (
 	prefix: usercenter/v1
-	group: user
+	group:  user
 )
 service usercenter-api {
 	@doc "用户注册"
 	@handler register
 	post /user/register (RegisterReq) returns (LoginRegisterResp)
-	
+
 	@doc "用户登录"
 	@handler login
 	post /user/login (LoginReq) returns (LoginRegisterResp)
 }
 
 // 需要登录验证的接口
-@server(
+@server (
 	prefix: usercenter/v1
-	group: user
-	jwt: Auth // 开启JWT认证，配置中需对应 Auth.AccessSecret
+	group:  user
+	jwt:    Auth // 开启JWT认证，配置中需对应 Auth.AccessSecret
 )
 service usercenter-api {
 	@doc "获取用户信息"
 	@handler detail
 	post /user/detail returns (UserDetailResp)
 }
+

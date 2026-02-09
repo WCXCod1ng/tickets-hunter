@@ -7,6 +7,7 @@ import (
 	"tickets-hunter/app/usercenter/cmd/api/internal/svc"
 	"tickets-hunter/app/usercenter/cmd/api/internal/types"
 
+	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -28,10 +29,15 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.LoginRegis
 	reqRpc := &rpc.RegisterReq{
 		Mobile:   req.Mobile,
 		Password: req.Password,
+		Nickname: req.Nickname,
+		Sex:      req.Sex,
+		Avatar:   req.Avatar,
+		Info:     req.Info,
 	}
 	respRpc, err := l.svcCtx.UserCenterRpc.Register(l.ctx, reqRpc)
 	if err != nil {
-		return nil, err
+		// 对于Rpc端的错误，我们应当通过Wrapf来包装
+		return nil, errors.WithStack(err)
 	}
 
 	resp = &types.LoginRegisterResp{}

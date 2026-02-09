@@ -10,5 +10,9 @@ Etcd:
 DB:
   DataSource: root:wang@tcp(127.0.0.1:3306)/tickets_hunter?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
 
+Snowflake:
+  StartTime: 2026-01-01
+  WorkerId: 1
+
 Timeout: 10000
 

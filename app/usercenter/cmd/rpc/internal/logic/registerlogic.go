@@ -9,7 +9,11 @@ import (
 	"tickets-hunter/app/usercenter/cmd/rpc/internal/svc"
 	"tickets-hunter/app/usercenter/cmd/rpc/usercenter/rpc"
 
+	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/stores/sqlx"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type RegisterLogic struct {
@@ -29,12 +33,18 @@ func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Register
 func (l *RegisterLogic) Register(in *rpc.RegisterReq) (*rpc.RegisterResp, error) {
 	// 校验手机号是否已经存在
 	_, err := l.svcCtx.UserModel.FindOneByMobile(l.ctx, in.GetMobile())
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return nil, status.Error(codes.AlreadyExists, "手机号已存在")
+	} else if !errors.Is(err, sqlx.ErrNotFound) {
+		return nil, errors.WithStack(status.Error(codes.Internal, err.Error()))
 	}
+
+	id := l.svcCtx.Snowflake.Generate().Int64()
+
+	// 到此说明手机号不重复
 	// 生成并插入数据
 	user := &model.User{
-		Id:         0,
+		Id:         id,
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 		DeleteTime: sql.NullTime{},
@@ -46,7 +56,7 @@ func (l *RegisterLogic) Register(in *rpc.RegisterReq) (*rpc.RegisterResp, error)
 		Info:       sql.NullString{},
 	}
 	if _, err := l.svcCtx.UserModel.Insert(l.ctx, user); err != nil {
-		return nil, err
+		return nil, errors.WithStack(status.Error(codes.Internal, err.Error()))
 	}
 
 	return &rpc.RegisterResp{
