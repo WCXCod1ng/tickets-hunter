@@ -7,11 +7,13 @@
 package rpc
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
+
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -220,9 +222,6 @@ func (x *LoginReq) GetPassword() string {
 type LoginResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Token         string                 `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
-	TokenExpire   int64                  `protobuf:"varint,3,opt,name=token_expire,json=tokenExpire,proto3" json:"token_expire,omitempty"`
-	RefreshAfter  int64                  `protobuf:"varint,4,opt,name=refresh_after,json=refreshAfter,proto3" json:"refresh_after,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -264,29 +263,9 @@ func (x *LoginResp) GetId() int64 {
 	return 0
 }
 
-func (x *LoginResp) GetToken() string {
-	if x != nil {
-		return x.Token
-	}
-	return ""
-}
-
-func (x *LoginResp) GetTokenExpire() int64 {
-	if x != nil {
-		return x.TokenExpire
-	}
-	return 0
-}
-
-func (x *LoginResp) GetRefreshAfter() int64 {
-	if x != nil {
-		return x.RefreshAfter
-	}
-	return 0
-}
-
 type DetailReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -319,6 +298,13 @@ func (x *DetailReq) ProtoReflect() protoreflect.Message {
 // Deprecated: Use DetailReq.ProtoReflect.Descriptor instead.
 func (*DetailReq) Descriptor() ([]byte, []int) {
 	return file_usercenter_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *DetailReq) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
 }
 
 type DetailResp struct {
@@ -410,27 +396,25 @@ var File_usercenter_proto protoreflect.FileDescriptor
 const file_usercenter_proto_rawDesc = "" +
 	"\n" +
 	"\x10usercenter.proto\x12\n" +
-	"usercenter\"\x9b\x01\n" +
-	"\vRegisterReq\x12\x16\n" +
-	"\x06mobile\x18\x01 \x01(\tR\x06mobile\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1a\n" +
-	"\bnickname\x18\x03 \x01(\tR\bnickname\x12\x10\n" +
-	"\x03sex\x18\x04 \x01(\x03R\x03sex\x12\x16\n" +
-	"\x06avatar\x18\x05 \x01(\tR\x06avatar\x12\x12\n" +
-	"\x04info\x18\x06 \x01(\tR\x04info\"W\n" +
+	"usercenter\x1a\x1avalidate/rpcvalidate.proto\"\xcf\x01\n" +
+	"\vRegisterReq\x12\x1f\n" +
+	"\x06mobile\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x06mobile\x12#\n" +
+	"\bpassword\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x06R\bpassword\x12%\n" +
+	"\bnickname\x18\x03 \x01(\tB\t\xfaB\x06r\x04\x10\x05\x18\x14R\bnickname\x12\x1d\n" +
+	"\x03sex\x18\x04 \x01(\x03B\v\xfaB\b\"\x060\x000\x010\x02R\x03sex\x12\x16\n" +
+	"\x06avatar\x18\x05 \x01(\tR\x06avatar\x12\x1c\n" +
+	"\x04info\x18\x06 \x01(\tB\b\xfaB\x05r\x03\x18\xff\x01R\x04info\"W\n" +
 	"\fRegisterResp\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05token\x18\x02 \x01(\tR\x05token\x12!\n" +
-	"\ftoken_expire\x18\x03 \x01(\x03R\vtokenExpire\">\n" +
-	"\bLoginReq\x12\x16\n" +
-	"\x06mobile\x18\x01 \x01(\tR\x06mobile\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"y\n" +
+	"\ftoken_expire\x18\x03 \x01(\x03R\vtokenExpire\"I\n" +
+	"\bLoginReq\x12!\n" +
+	"\x06mobile\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\v\x18\vR\x06mobile\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x1b\n" +
 	"\tLoginResp\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
-	"\x05token\x18\x02 \x01(\tR\x05token\x12!\n" +
-	"\ftoken_expire\x18\x03 \x01(\x03R\vtokenExpire\x12#\n" +
-	"\rrefresh_after\x18\x04 \x01(\x03R\frefreshAfter\"\v\n" +
-	"\tDetailReq\"\x8e\x01\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\x1b\n" +
+	"\tDetailReq\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\x8e\x01\n" +
 	"\n" +
 	"DetailResp\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +

@@ -45,7 +45,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 	return &ServiceContext{
 		Config:    c,
-		UserModel: model.NewUserModel(mysqlConn),
+		UserModel: model.NewUserModel(mysqlConn, c.UserCache),
 		Snowflake: createSnowflake(c),
 	}
 }

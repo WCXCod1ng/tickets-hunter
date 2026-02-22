@@ -18,13 +18,19 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			{
 				// 用户登录
 				Method:  http.MethodPost,
-				Path:    "/user/login",
+				Path:    "/login",
 				Handler: user.LoginHandler(serverCtx),
+			},
+			{
+				// token刷新
+				Method:  http.MethodPost,
+				Path:    "/refresh",
+				Handler: user.RefreshHandler(serverCtx),
 			},
 			{
 				// 用户注册
 				Method:  http.MethodPost,
-				Path:    "/user/register",
+				Path:    "/register",
 				Handler: user.RegisterHandler(serverCtx),
 			},
 		},
@@ -36,8 +42,14 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			{
 				// 获取用户信息
 				Method:  http.MethodPost,
-				Path:    "/user/detail",
+				Path:    "/detail",
 				Handler: user.DetailHandler(serverCtx),
+			},
+			{
+				// 用户登出
+				Method:  http.MethodPost,
+				Path:    "/logout",
+				Handler: user.LogoutHandler(serverCtx),
 			},
 		},
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),

@@ -2,11 +2,15 @@ package logic
 
 import (
 	"context"
+	"errors"
+	"tickets-hunter/app/usercenter/model"
 
 	"tickets-hunter/app/usercenter/cmd/rpc/internal/svc"
 	"tickets-hunter/app/usercenter/cmd/rpc/usercenter/rpc"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type DetailLogic struct {
@@ -24,7 +28,20 @@ func NewDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *DetailLogi
 }
 
 func (l *DetailLogic) Detail(in *rpc.DetailReq) (*rpc.DetailResp, error) {
-	// todo: add your logic here and delete this line
+	user, err := l.svcCtx.UserModel.FindOne(l.ctx, in.Id)
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "用户不存在")
+		}
+		return nil, err
+	}
 
-	return &rpc.DetailResp{}, nil
+	return &rpc.DetailResp{
+		Id:       user.Id,
+		Mobile:   user.Mobile,
+		Nickname: user.Nickname.String,
+		Sex:      int32(user.Sex),
+		Avatar:   user.Avatar.String,
+		Info:     user.Info.String,
+	}, nil
 }

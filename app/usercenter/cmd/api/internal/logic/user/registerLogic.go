@@ -42,7 +42,6 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.LoginRegis
 
 	resp = &types.LoginRegisterResp{}
 
-	resp.Id = respRpc.Id
 	resp.Token = respRpc.Token
 	resp.TokenExpire = respRpc.TokenExpire
 	err = nil

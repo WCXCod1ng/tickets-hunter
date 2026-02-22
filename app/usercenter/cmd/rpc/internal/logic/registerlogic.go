@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"tickets-hunter/app/usercenter/model"
+	"tickets-hunter/common/utils"
 	"time"
 
 	"tickets-hunter/app/usercenter/cmd/rpc/internal/svc"
@@ -41,6 +42,11 @@ func (l *RegisterLogic) Register(in *rpc.RegisterReq) (*rpc.RegisterResp, error)
 
 	id := l.svcCtx.Snowflake.Generate().Int64()
 
+	password, err := utils.Encrypt(in.GetPassword())
+	if err != nil {
+		return nil, errors.WithStack(status.Error(codes.Internal, err.Error()))
+	}
+
 	// 到此说明手机号不重复
 	// 生成并插入数据
 	user := &model.User{
@@ -49,7 +55,7 @@ func (l *RegisterLogic) Register(in *rpc.RegisterReq) (*rpc.RegisterResp, error)
 		UpdateTime: time.Now(),
 		DeleteTime: sql.NullTime{},
 		Mobile:     in.GetMobile(),
-		Password:   in.GetPassword(),
+		Password:   password,
 		Nickname:   sql.NullString{},
 		Sex:        0,
 		Avatar:     sql.NullString{},

@@ -10,6 +10,7 @@ import (
 	"tickets-hunter/app/usercenter/cmd/rpc/internal/svc"
 	"tickets-hunter/app/usercenter/cmd/rpc/usercenter/rpc"
 
+	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/zrpc"
@@ -37,8 +38,13 @@ func main() {
 	})
 	defer s.Stop()
 
-	// 添加全局错误处理中间件
-	s.AddUnaryInterceptors(interceptor.ServerErrorInterceptor)
+	// 添加中间件
+	s.AddUnaryInterceptors(
+		// 添加全局错误处理中间件
+		interceptor.ServerErrorInterceptor,
+		// 添加全局参数校验中间件。注意，必须在全局错误处理中间件之后添加，否则参数校验失败时错误信息将无法正确传递到错误处理中间件中。
+		grpc_validator.UnaryServerInterceptor(),
+	)
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
 	s.Start()

@@ -4,15 +4,29 @@
 package types
 
 type LoginRegisterResp struct {
-	Id           int64  `json:"id,optional"`
 	Token        string `json:"token,optional"`
 	TokenExpire  int64  `json:"token_expire,optional"`
-	RefreshAfter int64  `json:"refresh_after,optional"`
+	RefreshToken string `json:"refresh_token,optional"`
 }
 
 type LoginReq struct {
 	Mobile   string `json:"mobile,optional"`
 	Password string `json:"password,optional"`
+}
+
+type LogoutReq struct {
+	RefreshToken string `json:"refresh_token,optional" validate:"required,min=1"`
+}
+
+type RefreshReq struct {
+	RefreshToken string `json:"refresh_token,optional"`
+}
+
+type RefreshResp struct {
+	AccessToken  string `json:"access_token,optional"`
+	AccessExpire int64  `json:"access_expire,optional"`
+	RefreshToken string `json:"refresh_token,optional"`
+	RefreshAfter int64  `json:"refresh_after,optional"`
 }
 
 type RegisterReq struct {

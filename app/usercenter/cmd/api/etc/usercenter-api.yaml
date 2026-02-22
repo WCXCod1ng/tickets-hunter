@@ -2,9 +2,12 @@ Name: usercenter-api
 Host: 0.0.0.0
 Port: 8888
 
+Timeout: 10000
+
 Auth:
   AccessSecret: "dev-secret-key"
-  AccessExpire: 3600
+  AccessExpire: 3600 # 1小时
+  RefreshExpire: 604800 # 7天
 
 UserCenterRpc:
   Etcd:
@@ -14,4 +17,8 @@ UserCenterRpc:
       - 127.0.0.1:32379
     Key: usercenter.rpc
 
-Timeout: 10000
+Redis:
+  Host: 127.0.0.1:6379
+  Type: node        # node | cluster
+  Pass: ""          # 没密码就留空
+  Key: usercenter   # key 前缀（强烈建议）

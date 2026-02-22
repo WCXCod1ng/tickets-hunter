@@ -3,14 +3,16 @@ syntax = "proto3";
 package usercenter;
 
 option go_package = "usercenter/rpc";
+import "validate/rpcvalidate.proto";
+
 
 message RegisterReq {
-  string mobile = 1;
-  string password = 2;
-  string nickname = 3;
-  int64  sex = 4;
+  string mobile = 1 [(validate.rules).string = {min_len: 1}];
+  string password = 2 [(validate.rules).string = {min_len: 6}];
+  string nickname = 3 [(validate.rules).string = {min_len: 5, max_len: 20}];
+  int64  sex = 4 [(validate.rules).int64 = {in: [0, 1, 2]}];
   string avatar = 5;
-  string info = 6;
+  string info = 6 [(validate.rules).string = {max_len: 255}];
 }
 
 message RegisterResp {
@@ -20,18 +22,16 @@ message RegisterResp {
 }
 
 message LoginReq {
-  string mobile = 1;
+  string mobile = 1 [(validate.rules).string = {min_len: 11, max_len: 11}];
   string password = 2;
 }
 
 message LoginResp {
   int64   id = 1;
-  string  token = 2;
-  int64   token_expire = 3;
-  int64   refresh_after = 4;
 }
 
 message DetailReq {
+  int64   id = 1;
 }
 
 message DetailResp {

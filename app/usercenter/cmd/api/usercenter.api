@@ -19,15 +19,28 @@ type (
 	}
 	// 注册/登录响应
 	LoginRegisterResp {
-		Id           int64  `json:"id,optional"`
 		Token        string `json:"token,optional"`
 		TokenExpire  int64  `json:"token_expire,optional"`
-		RefreshAfter int64  `json:"refresh_after,optional"`
+		RefreshToken string `json:"refresh_token,optional"`
 	}
 	// 登录请求
 	LoginReq {
 		Mobile   string `json:"mobile,optional"`
 		Password string `json:"password,optional"`
+	}
+	// 刷新 Token 的请求与响应
+	RefreshReq {
+		RefreshToken string `json:"refresh_token,optional"`
+	}
+	RefreshResp {
+		AccessToken  string `json:"access_token,optional"`
+		AccessExpire int64  `json:"access_expire,optional"`
+		RefreshToken string `json:"refresh_token,optional"`
+		RefreshAfter int64  `json:"refresh_after,optional"`
+	}
+	// 用户登出请求
+	LogoutReq {
+		RefreshToken string `json:"refresh_token,optional" validate:"required,min=1"`
 	}
 	// 用户信息响应
 	UserDetailResp {
@@ -48,11 +61,15 @@ type (
 service usercenter-api {
 	@doc "用户注册"
 	@handler register
-	post /user/register (RegisterReq) returns (LoginRegisterResp)
+	post /register (RegisterReq) returns (LoginRegisterResp)
 
 	@doc "用户登录"
 	@handler login
-	post /user/login (LoginReq) returns (LoginRegisterResp)
+	post /login (LoginReq) returns (LoginRegisterResp)
+
+	@doc "token刷新"
+	@handler refresh
+	post /refresh (RefreshReq) returns (RefreshResp)
 }
 
 // 需要登录验证的接口
@@ -64,6 +81,10 @@ service usercenter-api {
 service usercenter-api {
 	@doc "获取用户信息"
 	@handler detail
-	post /user/detail returns (UserDetailResp)
+	post /detail returns (UserDetailResp)
+
+	@doc "用户登出"
+	@handler logout
+	post /logout (LogoutReq)
 }
 
