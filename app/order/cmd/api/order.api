@@ -1,0 +1,53 @@
+syntax = "v1"
+
+info (
+	title:   "订单服务API"
+	desc:    "处理用户抢票下单、订单查询等业务"
+	author:  "fleabane"
+	version: "v1"
+)
+
+type (
+	// 创建订单请求
+	CreateOrderReq {
+		EventId int64 `json:"event_id" validate:"required,min=1"`
+		SeatId  int64 `json:"seat_id" validate:"required,min=1"`
+	}
+	// 创建订单响应
+	CreateOrderResp {
+		OrderSn    string  `json:"order_sn"`
+		Amount     float64 `json:"amount"`
+		ExpireTime string  `json:"expire_time"` // 告诉前端什么时候过期，用于显示倒计时
+	}
+	// 查询订单详情请求
+	OrderDetailReq {
+		OrderSn string `form:"order_sn" validate:"required,min=1"`
+	}
+	// 查询订单详情响应
+	OrderDetailResp {
+		OrderSn    string  `json:"order_sn"`
+		EventId    int64   `json:"event_id"`
+		SeatId     int64   `json:"seat_id"`
+		Amount     float64 `json:"amount"`
+		Status     int64   `json:"status"` // 0待支付, 1已支付, 2超时取消, 3已出票
+		ExpireTime string  `json:"expire_time"`
+		CreateTime string  `json:"create_time"`
+	}
+)
+
+// 必须登录验证的接口
+@server (
+	prefix: order/v1
+	group:  order
+	jwt:    Auth // 开启 JWT 认证，验证通过后可通过 ctx.Value("jwtUserId") 获取用户ID
+)
+service order-api {
+	@doc "创建抢票订单(锁座+创单)"
+	@handler createOrder
+	post /create (CreateOrderReq) returns (CreateOrderResp)
+
+	@doc "获取订单详情"
+	@handler getOrderDetail
+	get /detail (OrderDetailReq) returns (OrderDetailResp)
+}
+

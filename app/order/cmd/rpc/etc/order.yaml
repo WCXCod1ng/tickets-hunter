@@ -1,0 +1,26 @@
+Name: order.rpc
+ListenOn: 0.0.0.0:8082
+Etcd:
+  Hosts:
+    - 127.0.0.1:2379
+    - 127.0.0.1:22379
+    - 127.0.0.1:32379
+  Key: order.rpc
+
+TicketRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+      - 127.0.0.1:22379
+      - 127.0.0.1:32379
+    Key: ticket.rpc
+  Timeout: 5000
+
+Snowflake:
+  StartTime: 2026-01-01
+  WorkerId: 1
+
+DB:
+  DataSource: root:wang@tcp(127.0.0.1:3306)/tickets_hunter?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+
+Timeout: 10000

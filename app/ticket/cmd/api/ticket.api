@@ -1,0 +1,57 @@
+syntax = "v1"
+
+info (
+	title:   "票务服务API"
+	desc:    "提供演唱会场次列表、座位图及状态查询"
+	author:  "fleabane"
+	version: "v1"
+)
+
+type (
+	// 场次信息
+	EventInfo {
+		Id            int64  `json:"id"`
+		Title         string `json:"title"`
+		CoverUrl      string `json:"cover_url"`
+		ShowTime      string `json:"show_time"`
+		Venue         string `json:"venue"`
+		SaleStartTime string `json:"sale_start_time"`
+		SaleEndTime   string `json:"sale_end_time"`
+		Status        int64  `json:"status"`
+	}
+	EventListResp {
+		List  []EventInfo `json:"list"`
+		Total int64       `json:"total"`
+	}
+	// 座位信息
+	SeatInfo {
+		Id       int64   `json:"id"`
+		SeatType int64   `json:"seat_type"` // 1普通 2VIP 3内场
+		Section  string  `json:"section"`
+		RowNo    int64   `json:"row_no"`
+		SeatNo   int64   `json:"seat_no"`
+		Price    float64 `json:"price"`
+		Status   int64   `json:"status"` // 0可选, 1锁定, 2已售
+	}
+	SeatListReq {
+		EventId int64 `form:"event_id,optional" validate:"required,min=1"`
+	}
+	SeatListResp {
+		List []SeatInfo `json:"list"`
+	}
+)
+
+@server (
+	prefix: ticket/v1
+	group:  ticket
+)
+service ticket-api {
+	@doc "获取上架的演唱会场次列表"
+	@handler getEventList
+	get /events returns (EventListResp)
+
+	@doc "获取指定场次的座位图及状态"
+	@handler getSeatList
+	get /seats (SeatListReq) returns (SeatListResp)
+}
+

@@ -6,7 +6,7 @@ CREATE TABLE `order_main` (
                               `user_id` bigint NOT NULL COMMENT '用户ID',
                               `event_id` bigint NOT NULL COMMENT '场次ID',
                               `seat_id` bigint NOT NULL COMMENT '座位ID',
-                              `amount` decimal(10,2) NOT NULL COMMENT '订单实付金额',
+                              `amount` bigint NOT NULL COMMENT '订单实付金额',
                               `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态: 0待支付, 1已支付(待出票), 2超时取消, 3已出票',
                               `expire_time` datetime NOT NULL COMMENT '订单支付过期时间(通常为创建时间+15分钟)',
                               `pay_time` datetime DEFAULT NULL COMMENT '实际支付时间',

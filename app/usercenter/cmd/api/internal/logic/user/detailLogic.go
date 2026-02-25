@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"tickets-hunter/app/usercenter/cmd/rpc/usercenter/rpc"
+	"tickets-hunter/common/utils"
 
 	"tickets-hunter/app/usercenter/cmd/api/internal/svc"
 	"tickets-hunter/app/usercenter/cmd/api/internal/types"
@@ -29,7 +30,7 @@ func NewDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *DetailLogi
 
 func (l *DetailLogic) Detail() (resp *types.UserDetailResp, err error) {
 	// 1. 从上下文中获取用户ID
-	userId, err := GetUserIdFromToken(l.ctx)
+	userId, err := utils.GetUserIdFromToken(l.ctx)
 	if err != nil {
 		return nil, errors2.WithStack(status.Error(codes.Unauthenticated, "用户未登录"))
 	}

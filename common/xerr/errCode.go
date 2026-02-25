@@ -6,3 +6,11 @@ package xerr
 const (
 	LoginFailed uint32 = 10000 + iota
 )
+
+// 票务模块
+const (
+	LockSeatFailed uint32 = 20000 + iota
+)
+
+// 订单模块
+const ()

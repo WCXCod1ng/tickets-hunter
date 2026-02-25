@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package ticket;
+
+option go_package = "ticket/rpc";
+import "validate/rpcvalidate.proto";
+
+
+// ==========================================
+// 1. 公共实体 Message
+// ==========================================
+
+// 演唱会场次信息
+message EventInfo {
+  int64 id = 1;
+  string title = 2;
+  string cover_url = 3;
+  string show_time = 4;
+  string venue = 5;
+  string sale_start_time = 6;
+  string sale_end_time = 7;
+  int64 status = 8;
+}
+
+// 座位信息
+message SeatInfo {
+  int64 id = 1;
+  int64 seat_type = 2;  // 座位类型: 1普通 2VIP 3内场
+  string section = 3;   // 区域
+  int64 row_no = 4;     // 排号
+  int64 seat_no = 5;    // 座位号
+  int64 price = 6;     // 价格 (用int64分来表示金额)
+  int64 status = 7;     // 状态: 0可选, 1锁定(未支付), 2已售(已出票)
+}
+
+
+// ==========================================
+// 2. 请求与响应 Message
+// ==========================================
+
+// 2.1 获取场次列表
+message GetEventListReq {
+  // 阶段二暂无参数，预留空结构体以便后续扩展(如分页、搜索)
+}
+
+message GetEventListResp {
+  repeated EventInfo list = 1;
+  int64 total = 2;
+}
+
+// 2.2 获取座位列表
+message GetSeatListReq {
+  // 场次ID，必填且必须大于0
+  int64 event_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message GetSeatListResp {
+  repeated SeatInfo list = 1;
+}
+
+// 2.3 锁定座位 (防超卖核心)
+message LockSeatReq {
+  int64 event_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int64 seat_id = 2 [(validate.rules).int64 = {gt: 0}];
+}
+
+message LockSeatResp {
+  bool success = 1;     // 是否锁座成功
+}
+
+// 2.4 获取座位信息 (供 Order RPC 内部调用)
+message GetSeatInfoReq {
+  int64 seat_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+
+// ==========================================
+// 3. 服务定义 Service
+// ==========================================
+
+service TicketService {
+  // 获取演唱会场次列表 (供 API 层调用)
+  rpc GetEventList(GetEventListReq) returns(GetEventListResp);
+
+  // 获取指定场次的座位图及状态 (供 API 层调用)
+  rpc GetSeatList(GetSeatListReq) returns(GetSeatListResp);
+
+  // 锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+  rpc LockSeat(LockSeatReq) returns(LockSeatResp);
+
+  // 获取座位信息 (供 Order RPC 内部调用)
+  rpc GetSeatInfo(GetSeatInfoReq) returns(SeatInfo);
+}

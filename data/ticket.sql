@@ -23,7 +23,7 @@ CREATE TABLE `ticket_seat` (
                                `section` varchar(32) NOT NULL COMMENT '区域(如A区)',
                                `row_no` int NOT NULL COMMENT '排号',
                                `seat_no` int NOT NULL COMMENT '座位号',
-                               `price` decimal(10,2) NOT NULL COMMENT '座位价格',
+                               `price` bigint NOT NULL COMMENT '座位价格',
                                `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态: 0可选, 1锁定(未支付), 2已售(已出票)',
                                `version` int NOT NULL DEFAULT '0' COMMENT '乐观锁版本号(防超卖核心)',
                                `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,

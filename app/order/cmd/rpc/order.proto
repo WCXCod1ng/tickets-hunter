@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package order;
+
+// 指定生成的 Go 代码的包路径
+option go_package = "order/rpc";
+import "validate/rpcvalidate.proto";
+
+// ==========================================
+// 1. 请求与响应 Message
+// ==========================================
+
+// 1.1 创建订单请求
+message CreateOrderReq {
+  int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];  // 核心安全校验：必须传入 user_id，防止水平越权
+  int64 event_id = 2 [(validate.rules).int64 = {gt: 0}]; // 场次 ID，必填且必须大于0
+  int64 seat_id = 3 [(validate.rules).int64 = {gt: 0}];  // 座位 ID，必填且必须大于0
+}
+
+message CreateOrderResp {
+  string order_sn = 1;     // 生成的唯一订单号
+  int64 amount = 2;       // 订单金额，以分为单位，避免浮点数精度问题
+  int64 expire_time = 3;   // 过期时间戳(秒)，交由 API 层格式化或直接返给前端倒计时
+}
+
+
+// 1.2 查询订单详情请求
+message GetOrderDetailReq {
+  string order_sn = 1 [(validate.rules).string = {min_len: 1}]; // 订单号，必填且不能为空
+  int64 user_id = 2 [(validate.rules).int64 = {gt: 0}];  // 核心安全校验：必须传入 user_id，防止水平越权
+}
+
+message GetOrderDetailResp {
+  string order_sn = 1;
+  int64 event_id = 2;
+  int64 seat_id = 3;
+  int64 amount = 4;
+  int64 status = 5;       // 0待支付, 1已支付, 2超时取消, 3已出票
+  int64 expire_time = 6;  // 过期时间戳
+  int64 create_time = 7;  // 创建时间戳
+}
+
+// ==========================================
+// 2. 服务定义 Service
+// ==========================================
+
+service OrderService {
+  // 创建抢票订单 (包含调用 Ticket RPC 锁座逻辑)
+  rpc CreateOrder(CreateOrderReq) returns(CreateOrderResp);
+
+  // 获取订单详情
+  rpc GetOrderDetail(GetOrderDetailReq) returns(GetOrderDetailResp);
+}

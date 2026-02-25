@@ -10,10 +10,6 @@ type Config struct {
 	DB struct {
 		DataSource string
 	}
-	Snowflake struct {
-		StartTime string `json:"StartTime" binding:"required"`
-		WorkerId  int64  `json:"WorkerId" binding:"required"`
-	}
-	// UserCache配置
-	UserCache cache.CacheConf
+	// TicketEventCache配置
+	TicketEventCache cache.CacheConf
 }
