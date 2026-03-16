@@ -2,7 +2,7 @@ Name: usercenter-api
 Host: 0.0.0.0
 Port: 8889
 
-Timeout: 10000
+Timeout: 60000
 
 Auth:
   AccessSecret: "dev-secret-key"
@@ -16,7 +16,7 @@ TicketRpc:
       - 127.0.0.1:22379
       - 127.0.0.1:32379
     Key: ticket.rpc
-  Timeout: 5000
+  Timeout: 60000
 
 Redis:
   Host: 127.0.0.1:6379

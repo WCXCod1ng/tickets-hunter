@@ -2,7 +2,7 @@ Name: order-api
 Host: 0.0.0.0
 Port: 8891
 
-Timeout: 10000
+Timeout: 60000
 
 Auth:
   AccessSecret: "dev-secret-key"
@@ -16,10 +16,31 @@ OrderRpc:
       - 127.0.0.1:22379
       - 127.0.0.1:32379
     Key: order.rpc
-  Timeout: 5000
+  Timeout: 60000
 
 Redis:
   Host: 127.0.0.1:6379
   Type: node        # node | cluster
   Pass: ""          # 没密码就留空
   Key: order   # key 前缀（强烈建议）
+
+# 令牌桶限流器配置
+TokenLimiter:
+  Redis:
+    Host: 127.0.0.1:6379
+    Type: node        # node | cluster
+    Pass: ""          # 没密码就留空
+  Key: "rate_limiter:order_api"  # Redis key 前缀
+  Rate: 5           # 令牌生成速率（每秒生成的令牌数）
+  Burst: 200          # 令牌桶容量（允许的最大突发请求数）
+  Seconds: 1            # 令牌生成的时间间隔，单位秒
+
+Log:
+  ServiceName: order-api
+  Level: debug
+#  Mode: file
+  Encoding: plain        # plain | json
+  Path: logs             # 日志目录
+  KeepDays: 7
+  MaxSize: 100           # MB
+  StackCooldownMillis: 100

@@ -47,7 +47,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		SeatId:  req.SeatId,
 	})
 	if err != nil {
-		return nil, errors2.WithStack(status.Error(codes.Internal, err.Error()))
+		return nil, err
 	}
 
 	// 时间戳格式化

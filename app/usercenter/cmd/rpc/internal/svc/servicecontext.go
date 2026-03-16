@@ -1,8 +1,8 @@
 package svc
 
 import (
+	"tickets-hunter/app/model/usercenter"
 	"tickets-hunter/app/usercenter/cmd/rpc/internal/config"
-	"tickets-hunter/app/usercenter/model"
 	"tickets-hunter/common/idgen"
 
 	"github.com/bwmarrin/snowflake"
@@ -11,7 +11,7 @@ import (
 
 type ServiceContext struct {
 	Config    config.Config
-	UserModel model.UserModel
+	UserModel usercenter.UserModel
 	Snowflake *snowflake.Node
 }
 
@@ -20,7 +20,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 	return &ServiceContext{
 		Config:    c,
-		UserModel: model.NewUserModel(mysqlConn, c.UserCache),
+		UserModel: usercenter.NewUserModel(mysqlConn, c.UserCache),
 		Snowflake: idgen.CreateSnowFlakeNode(c.Snowflake.StartTime, c.Snowflake.WorkerId),
 	}
 }

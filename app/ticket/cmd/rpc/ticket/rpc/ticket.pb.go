@@ -128,12 +128,13 @@ func (x *EventInfo) GetStatus() int64 {
 type SeatInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	SeatType      int64                  `protobuf:"varint,2,opt,name=seat_type,json=seatType,proto3" json:"seat_type,omitempty"` // 座位类型: 1普通 2VIP 3内场
-	Section       string                 `protobuf:"bytes,3,opt,name=section,proto3" json:"section,omitempty"`                    // 区域
-	RowNo         int64                  `protobuf:"varint,4,opt,name=row_no,json=rowNo,proto3" json:"row_no,omitempty"`          // 排号
-	SeatNo        int64                  `protobuf:"varint,5,opt,name=seat_no,json=seatNo,proto3" json:"seat_no,omitempty"`       // 座位号
-	Price         int64                  `protobuf:"varint,6,opt,name=price,proto3" json:"price,omitempty"`                       // 价格 (用int64分来表示金额)
-	Status        int64                  `protobuf:"varint,7,opt,name=status,proto3" json:"status,omitempty"`                     // 状态: 0可选, 1锁定(未支付), 2已售(已出票)
+	SeatType      int64                  `protobuf:"varint,2,opt,name=seat_type,json=seatType,proto3" json:"seat_type,omitempty"`    // 座位类型: 1普通 2VIP 3内场
+	Section       string                 `protobuf:"bytes,3,opt,name=section,proto3" json:"section,omitempty"`                       // 区域
+	RowNo         int64                  `protobuf:"varint,4,opt,name=row_no,json=rowNo,proto3" json:"row_no,omitempty"`             // 排号
+	SeatNo        int64                  `protobuf:"varint,5,opt,name=seat_no,json=seatNo,proto3" json:"seat_no,omitempty"`          // 座位号
+	Price         int64                  `protobuf:"varint,6,opt,name=price,proto3" json:"price,omitempty"`                          // 价格 (用int64分来表示金额)
+	Status        int64                  `protobuf:"varint,7,opt,name=status,proto3" json:"status,omitempty"`                        // 状态: 0可选, 1锁定(未支付), 2已售(已出票)
+	SeatIndex     int64                  `protobuf:"varint,8,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"` // 同一个区域内的座位索引
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -213,6 +214,13 @@ func (x *SeatInfo) GetPrice() int64 {
 func (x *SeatInfo) GetStatus() int64 {
 	if x != nil {
 		return x.Status
+	}
+	return 0
+}
+
+func (x *SeatInfo) GetSeatIndex() int64 {
+	if x != nil {
+		return x.SeatIndex
 	}
 	return 0
 }
@@ -401,6 +409,9 @@ type LockSeatReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	EventId       int64                  `protobuf:"varint,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
 	SeatId        int64                  `protobuf:"varint,2,opt,name=seat_id,json=seatId,proto3" json:"seat_id,omitempty"`
+	OrderSn       string                 `protobuf:"bytes,3,opt,name=order_sn,json=orderSn,proto3" json:"order_sn,omitempty"`        // 订单号，用于锁定座位
+	SeatIndex     int64                  `protobuf:"varint,4,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"` // 使用BitMap进行的优化
+	Section       string                 `protobuf:"bytes,5,opt,name=section,proto3" json:"section,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -447,6 +458,27 @@ func (x *LockSeatReq) GetSeatId() int64 {
 		return x.SeatId
 	}
 	return 0
+}
+
+func (x *LockSeatReq) GetOrderSn() string {
+	if x != nil {
+		return x.OrderSn
+	}
+	return ""
+}
+
+func (x *LockSeatReq) GetSeatIndex() int64 {
+	if x != nil {
+		return x.SeatIndex
+	}
+	return 0
+}
+
+func (x *LockSeatReq) GetSection() string {
+	if x != nil {
+		return x.Section
+	}
+	return ""
 }
 
 type LockSeatResp struct {
@@ -538,6 +570,434 @@ func (x *GetSeatInfoReq) GetSeatId() int64 {
 	return 0
 }
 
+// 2.5 有效座位集合缓存预热
+type WarmUpValidSeatsReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventId       int64                  `protobuf:"varint,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WarmUpValidSeatsReq) Reset() {
+	*x = WarmUpValidSeatsReq{}
+	mi := &file_ticket_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WarmUpValidSeatsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WarmUpValidSeatsReq) ProtoMessage() {}
+
+func (x *WarmUpValidSeatsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_ticket_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WarmUpValidSeatsReq.ProtoReflect.Descriptor instead.
+func (*WarmUpValidSeatsReq) Descriptor() ([]byte, []int) {
+	return file_ticket_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *WarmUpValidSeatsReq) GetEventId() int64 {
+	if x != nil {
+		return x.EventId
+	}
+	return 0
+}
+
+type WarmUpValidSeatsResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"` // 是否预热成功
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WarmUpValidSeatsResp) Reset() {
+	*x = WarmUpValidSeatsResp{}
+	mi := &file_ticket_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WarmUpValidSeatsResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WarmUpValidSeatsResp) ProtoMessage() {}
+
+func (x *WarmUpValidSeatsResp) ProtoReflect() protoreflect.Message {
+	mi := &file_ticket_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WarmUpValidSeatsResp.ProtoReflect.Descriptor instead.
+func (*WarmUpValidSeatsResp) Descriptor() ([]byte, []int) {
+	return file_ticket_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *WarmUpValidSeatsResp) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+// 2.6 取消锁定座位 (供 Order RPC 内部调用)
+type UnlockSeatReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SeatId        int64                  `protobuf:"varint,2,opt,name=seat_id,json=seatId,proto3" json:"seat_id,omitempty"`
+	OrderSn       string                 `protobuf:"bytes,3,opt,name=order_sn,json=orderSn,proto3" json:"order_sn,omitempty"`        // 订单号，用于解锁座位
+	SeatIndex     int64                  `protobuf:"varint,4,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"` // 使用BitMap进行的优化
+	Section       string                 `protobuf:"bytes,5,opt,name=section,proto3" json:"section,omitempty"`
+	EventId       int64                  `protobuf:"varint,6,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"` // 场次Id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnlockSeatReq) Reset() {
+	*x = UnlockSeatReq{}
+	mi := &file_ticket_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnlockSeatReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnlockSeatReq) ProtoMessage() {}
+
+func (x *UnlockSeatReq) ProtoReflect() protoreflect.Message {
+	mi := &file_ticket_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnlockSeatReq.ProtoReflect.Descriptor instead.
+func (*UnlockSeatReq) Descriptor() ([]byte, []int) {
+	return file_ticket_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *UnlockSeatReq) GetSeatId() int64 {
+	if x != nil {
+		return x.SeatId
+	}
+	return 0
+}
+
+func (x *UnlockSeatReq) GetOrderSn() string {
+	if x != nil {
+		return x.OrderSn
+	}
+	return ""
+}
+
+func (x *UnlockSeatReq) GetSeatIndex() int64 {
+	if x != nil {
+		return x.SeatIndex
+	}
+	return 0
+}
+
+func (x *UnlockSeatReq) GetSection() string {
+	if x != nil {
+		return x.Section
+	}
+	return ""
+}
+
+func (x *UnlockSeatReq) GetEventId() int64 {
+	if x != nil {
+		return x.EventId
+	}
+	return 0
+}
+
+type UnlockSeatResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"` // 是否解锁成功
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnlockSeatResp) Reset() {
+	*x = UnlockSeatResp{}
+	mi := &file_ticket_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnlockSeatResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnlockSeatResp) ProtoMessage() {}
+
+func (x *UnlockSeatResp) ProtoReflect() protoreflect.Message {
+	mi := &file_ticket_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnlockSeatResp.ProtoReflect.Descriptor instead.
+func (*UnlockSeatResp) Descriptor() ([]byte, []int) {
+	return file_ticket_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *UnlockSeatResp) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+// 2.7 释放座位
+type ReleaseSeatReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SeatId        int64                  `protobuf:"varint,1,opt,name=seat_id,json=seatId,proto3" json:"seat_id,omitempty"`
+	OrderSn       string                 `protobuf:"bytes,2,opt,name=order_sn,json=orderSn,proto3" json:"order_sn,omitempty"`        // 订单号，用于释放座位
+	SeatIndex     int64                  `protobuf:"varint,4,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"` // 使用BitMap进行的优化
+	Section       string                 `protobuf:"bytes,5,opt,name=section,proto3" json:"section,omitempty"`
+	EventId       int64                  `protobuf:"varint,6,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"` // 场次Id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReleaseSeatReq) Reset() {
+	*x = ReleaseSeatReq{}
+	mi := &file_ticket_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReleaseSeatReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReleaseSeatReq) ProtoMessage() {}
+
+func (x *ReleaseSeatReq) ProtoReflect() protoreflect.Message {
+	mi := &file_ticket_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReleaseSeatReq.ProtoReflect.Descriptor instead.
+func (*ReleaseSeatReq) Descriptor() ([]byte, []int) {
+	return file_ticket_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ReleaseSeatReq) GetSeatId() int64 {
+	if x != nil {
+		return x.SeatId
+	}
+	return 0
+}
+
+func (x *ReleaseSeatReq) GetOrderSn() string {
+	if x != nil {
+		return x.OrderSn
+	}
+	return ""
+}
+
+func (x *ReleaseSeatReq) GetSeatIndex() int64 {
+	if x != nil {
+		return x.SeatIndex
+	}
+	return 0
+}
+
+func (x *ReleaseSeatReq) GetSection() string {
+	if x != nil {
+		return x.Section
+	}
+	return ""
+}
+
+func (x *ReleaseSeatReq) GetEventId() int64 {
+	if x != nil {
+		return x.EventId
+	}
+	return 0
+}
+
+type ReleaseSeatResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"` // 是否释放成功
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReleaseSeatResp) Reset() {
+	*x = ReleaseSeatResp{}
+	mi := &file_ticket_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReleaseSeatResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReleaseSeatResp) ProtoMessage() {}
+
+func (x *ReleaseSeatResp) ProtoReflect() protoreflect.Message {
+	mi := &file_ticket_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReleaseSeatResp.ProtoReflect.Descriptor instead.
+func (*ReleaseSeatResp) Descriptor() ([]byte, []int) {
+	return file_ticket_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ReleaseSeatResp) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+// 2.8 获取指定区域的座位状态
+type GetSeatBitMapReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventId       int64                  `protobuf:"varint,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"` // 场次ID
+	Section       string                 `protobuf:"bytes,2,opt,name=section,proto3" json:"section,omitempty"`                 // 区域信息
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSeatBitMapReq) Reset() {
+	*x = GetSeatBitMapReq{}
+	mi := &file_ticket_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSeatBitMapReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSeatBitMapReq) ProtoMessage() {}
+
+func (x *GetSeatBitMapReq) ProtoReflect() protoreflect.Message {
+	mi := &file_ticket_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSeatBitMapReq.ProtoReflect.Descriptor instead.
+func (*GetSeatBitMapReq) Descriptor() ([]byte, []int) {
+	return file_ticket_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *GetSeatBitMapReq) GetEventId() int64 {
+	if x != nil {
+		return x.EventId
+	}
+	return 0
+}
+
+func (x *GetSeatBitMapReq) GetSection() string {
+	if x != nil {
+		return x.Section
+	}
+	return ""
+}
+
+type GetSeatBitMapResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Bitmap        string                 `protobuf:"bytes,1,opt,name=bitmap,proto3" json:"bitmap,omitempty"` // bitmap信息
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSeatBitMapResp) Reset() {
+	*x = GetSeatBitMapResp{}
+	mi := &file_ticket_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSeatBitMapResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSeatBitMapResp) ProtoMessage() {}
+
+func (x *GetSeatBitMapResp) ProtoReflect() protoreflect.Message {
+	mi := &file_ticket_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSeatBitMapResp.ProtoReflect.Descriptor instead.
+func (*GetSeatBitMapResp) Descriptor() ([]byte, []int) {
+	return file_ticket_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetSeatBitMapResp) GetBitmap() string {
+	if x != nil {
+		return x.Bitmap
+	}
+	return ""
+}
+
 var File_ticket_proto protoreflect.FileDescriptor
 
 const file_ticket_proto_rawDesc = "" +
@@ -551,7 +1011,7 @@ const file_ticket_proto_rawDesc = "" +
 	"\x05venue\x18\x05 \x01(\tR\x05venue\x12&\n" +
 	"\x0fsale_start_time\x18\x06 \x01(\tR\rsaleStartTime\x12\"\n" +
 	"\rsale_end_time\x18\a \x01(\tR\vsaleEndTime\x12\x16\n" +
-	"\x06status\x18\b \x01(\x03R\x06status\"\xaf\x01\n" +
+	"\x06status\x18\b \x01(\x03R\x06status\"\xce\x01\n" +
 	"\bSeatInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
 	"\tseat_type\x18\x02 \x01(\x03R\bseatType\x12\x18\n" +
@@ -559,7 +1019,9 @@ const file_ticket_proto_rawDesc = "" +
 	"\x06row_no\x18\x04 \x01(\x03R\x05rowNo\x12\x17\n" +
 	"\aseat_no\x18\x05 \x01(\x03R\x06seatNo\x12\x14\n" +
 	"\x05price\x18\x06 \x01(\x03R\x05price\x12\x16\n" +
-	"\x06status\x18\a \x01(\x03R\x06status\"\x11\n" +
+	"\x06status\x18\a \x01(\x03R\x06status\x12\x1d\n" +
+	"\n" +
+	"seat_index\x18\b \x01(\x03R\tseatIndex\"\x11\n" +
 	"\x0fGetEventListReq\"O\n" +
 	"\x10GetEventListResp\x12%\n" +
 	"\x04list\x18\x01 \x03(\v2\x11.ticket.EventInfoR\x04list\x12\x14\n" +
@@ -567,19 +1029,55 @@ const file_ticket_proto_rawDesc = "" +
 	"\x0eGetSeatListReq\x12\"\n" +
 	"\bevent_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aeventId\"7\n" +
 	"\x0fGetSeatListResp\x12$\n" +
-	"\x04list\x18\x01 \x03(\v2\x10.ticket.SeatInfoR\x04list\"S\n" +
+	"\x04list\x18\x01 \x03(\v2\x10.ticket.SeatInfoR\x04list\"\xc2\x01\n" +
 	"\vLockSeatReq\x12\"\n" +
 	"\bevent_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aeventId\x12 \n" +
-	"\aseat_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06seatId\"(\n" +
+	"\aseat_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06seatId\x12\"\n" +
+	"\border_sn\x18\x03 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\aorderSn\x12&\n" +
+	"\n" +
+	"seat_index\x18\x04 \x01(\x03B\a\xfaB\x04\"\x02(\x00R\tseatIndex\x12!\n" +
+	"\asection\x18\x05 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\asection\"(\n" +
 	"\fLockSeatResp\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"2\n" +
 	"\x0eGetSeatInfoReq\x12 \n" +
-	"\aseat_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06seatId2\x82\x02\n" +
+	"\aseat_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06seatId\"9\n" +
+	"\x13WarmUpValidSeatsReq\x12\"\n" +
+	"\bevent_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aeventId\"0\n" +
+	"\x14WarmUpValidSeatsResp\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xc4\x01\n" +
+	"\rUnlockSeatReq\x12 \n" +
+	"\aseat_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06seatId\x12\"\n" +
+	"\border_sn\x18\x03 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\aorderSn\x12&\n" +
+	"\n" +
+	"seat_index\x18\x04 \x01(\x03B\a\xfaB\x04\"\x02(\x00R\tseatIndex\x12!\n" +
+	"\asection\x18\x05 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\asection\x12\"\n" +
+	"\bevent_id\x18\x06 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aeventId\"*\n" +
+	"\x0eUnlockSeatResp\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xc5\x01\n" +
+	"\x0eReleaseSeatReq\x12 \n" +
+	"\aseat_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06seatId\x12\"\n" +
+	"\border_sn\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\aorderSn\x12&\n" +
+	"\n" +
+	"seat_index\x18\x04 \x01(\x03B\a\xfaB\x04\"\x02(\x00R\tseatIndex\x12!\n" +
+	"\asection\x18\x05 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\asection\x12\"\n" +
+	"\bevent_id\x18\x06 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aeventId\"+\n" +
+	"\x0fReleaseSeatResp\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"Y\n" +
+	"\x10GetSeatBitMapReq\x12\"\n" +
+	"\bevent_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aeventId\x12!\n" +
+	"\asection\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\asection\"+\n" +
+	"\x11GetSeatBitMapResp\x12\x16\n" +
+	"\x06bitmap\x18\x01 \x01(\tR\x06bitmap2\x93\x04\n" +
 	"\rTicketService\x12A\n" +
 	"\fGetEventList\x12\x17.ticket.GetEventListReq\x1a\x18.ticket.GetEventListResp\x12>\n" +
 	"\vGetSeatList\x12\x16.ticket.GetSeatListReq\x1a\x17.ticket.GetSeatListResp\x125\n" +
 	"\bLockSeat\x12\x13.ticket.LockSeatReq\x1a\x14.ticket.LockSeatResp\x127\n" +
-	"\vGetSeatInfo\x12\x16.ticket.GetSeatInfoReq\x1a\x10.ticket.SeatInfoB\fZ\n" +
+	"\vGetSeatInfo\x12\x16.ticket.GetSeatInfoReq\x1a\x10.ticket.SeatInfo\x12M\n" +
+	"\x10WarmUpValidSeats\x12\x1b.ticket.WarmUpValidSeatsReq\x1a\x1c.ticket.WarmUpValidSeatsResp\x12;\n" +
+	"\n" +
+	"UnlockSeat\x12\x15.ticket.UnlockSeatReq\x1a\x16.ticket.UnlockSeatResp\x12>\n" +
+	"\vReleaseSeat\x12\x16.ticket.ReleaseSeatReq\x1a\x17.ticket.ReleaseSeatResp\x12C\n" +
+	"\rGetSeatBitMap\x12\x18.ticket.GetSeatBitMapReq\x1a\x18.ticket.GetEventListRespB\fZ\n" +
 	"ticket/rpcb\x06proto3"
 
 var (
@@ -594,34 +1092,50 @@ func file_ticket_proto_rawDescGZIP() []byte {
 	return file_ticket_proto_rawDescData
 }
 
-var file_ticket_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_ticket_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_ticket_proto_goTypes = []any{
-	(*EventInfo)(nil),        // 0: ticket.EventInfo
-	(*SeatInfo)(nil),         // 1: ticket.SeatInfo
-	(*GetEventListReq)(nil),  // 2: ticket.GetEventListReq
-	(*GetEventListResp)(nil), // 3: ticket.GetEventListResp
-	(*GetSeatListReq)(nil),   // 4: ticket.GetSeatListReq
-	(*GetSeatListResp)(nil),  // 5: ticket.GetSeatListResp
-	(*LockSeatReq)(nil),      // 6: ticket.LockSeatReq
-	(*LockSeatResp)(nil),     // 7: ticket.LockSeatResp
-	(*GetSeatInfoReq)(nil),   // 8: ticket.GetSeatInfoReq
+	(*EventInfo)(nil),            // 0: ticket.EventInfo
+	(*SeatInfo)(nil),             // 1: ticket.SeatInfo
+	(*GetEventListReq)(nil),      // 2: ticket.GetEventListReq
+	(*GetEventListResp)(nil),     // 3: ticket.GetEventListResp
+	(*GetSeatListReq)(nil),       // 4: ticket.GetSeatListReq
+	(*GetSeatListResp)(nil),      // 5: ticket.GetSeatListResp
+	(*LockSeatReq)(nil),          // 6: ticket.LockSeatReq
+	(*LockSeatResp)(nil),         // 7: ticket.LockSeatResp
+	(*GetSeatInfoReq)(nil),       // 8: ticket.GetSeatInfoReq
+	(*WarmUpValidSeatsReq)(nil),  // 9: ticket.WarmUpValidSeatsReq
+	(*WarmUpValidSeatsResp)(nil), // 10: ticket.WarmUpValidSeatsResp
+	(*UnlockSeatReq)(nil),        // 11: ticket.UnlockSeatReq
+	(*UnlockSeatResp)(nil),       // 12: ticket.UnlockSeatResp
+	(*ReleaseSeatReq)(nil),       // 13: ticket.ReleaseSeatReq
+	(*ReleaseSeatResp)(nil),      // 14: ticket.ReleaseSeatResp
+	(*GetSeatBitMapReq)(nil),     // 15: ticket.GetSeatBitMapReq
+	(*GetSeatBitMapResp)(nil),    // 16: ticket.GetSeatBitMapResp
 }
 var file_ticket_proto_depIdxs = []int32{
-	0, // 0: ticket.GetEventListResp.list:type_name -> ticket.EventInfo
-	1, // 1: ticket.GetSeatListResp.list:type_name -> ticket.SeatInfo
-	2, // 2: ticket.TicketService.GetEventList:input_type -> ticket.GetEventListReq
-	4, // 3: ticket.TicketService.GetSeatList:input_type -> ticket.GetSeatListReq
-	6, // 4: ticket.TicketService.LockSeat:input_type -> ticket.LockSeatReq
-	8, // 5: ticket.TicketService.GetSeatInfo:input_type -> ticket.GetSeatInfoReq
-	3, // 6: ticket.TicketService.GetEventList:output_type -> ticket.GetEventListResp
-	5, // 7: ticket.TicketService.GetSeatList:output_type -> ticket.GetSeatListResp
-	7, // 8: ticket.TicketService.LockSeat:output_type -> ticket.LockSeatResp
-	1, // 9: ticket.TicketService.GetSeatInfo:output_type -> ticket.SeatInfo
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0,  // 0: ticket.GetEventListResp.list:type_name -> ticket.EventInfo
+	1,  // 1: ticket.GetSeatListResp.list:type_name -> ticket.SeatInfo
+	2,  // 2: ticket.TicketService.GetEventList:input_type -> ticket.GetEventListReq
+	4,  // 3: ticket.TicketService.GetSeatList:input_type -> ticket.GetSeatListReq
+	6,  // 4: ticket.TicketService.LockSeat:input_type -> ticket.LockSeatReq
+	8,  // 5: ticket.TicketService.GetSeatInfo:input_type -> ticket.GetSeatInfoReq
+	9,  // 6: ticket.TicketService.WarmUpValidSeats:input_type -> ticket.WarmUpValidSeatsReq
+	11, // 7: ticket.TicketService.UnlockSeat:input_type -> ticket.UnlockSeatReq
+	13, // 8: ticket.TicketService.ReleaseSeat:input_type -> ticket.ReleaseSeatReq
+	15, // 9: ticket.TicketService.GetSeatBitMap:input_type -> ticket.GetSeatBitMapReq
+	3,  // 10: ticket.TicketService.GetEventList:output_type -> ticket.GetEventListResp
+	5,  // 11: ticket.TicketService.GetSeatList:output_type -> ticket.GetSeatListResp
+	7,  // 12: ticket.TicketService.LockSeat:output_type -> ticket.LockSeatResp
+	1,  // 13: ticket.TicketService.GetSeatInfo:output_type -> ticket.SeatInfo
+	10, // 14: ticket.TicketService.WarmUpValidSeats:output_type -> ticket.WarmUpValidSeatsResp
+	12, // 15: ticket.TicketService.UnlockSeat:output_type -> ticket.UnlockSeatResp
+	14, // 16: ticket.TicketService.ReleaseSeat:output_type -> ticket.ReleaseSeatResp
+	3,  // 17: ticket.TicketService.GetSeatBitMap:output_type -> ticket.GetEventListResp
+	10, // [10:18] is the sub-list for method output_type
+	2,  // [2:10] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_ticket_proto_init() }
@@ -635,7 +1149,7 @@ func file_ticket_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ticket_proto_rawDesc), len(file_ticket_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -513,3 +513,220 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetOrderDetailRespValidationError{}
+
+// Validate checks the field values on SagaOrderReq with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *SagaOrderReq) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SagaOrderReq with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in SagaOrderReqMultiError, or
+// nil if none found.
+func (m *SagaOrderReq) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SagaOrderReq) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for OrderSn
+
+	// no validation rules for UserId
+
+	// no validation rules for Amount
+
+	// no validation rules for SeatId
+
+	// no validation rules for EventId
+
+	// no validation rules for Section
+
+	// no validation rules for SeatIndex
+
+	if len(errors) > 0 {
+		return SagaOrderReqMultiError(errors)
+	}
+
+	return nil
+}
+
+// SagaOrderReqMultiError is an error wrapping multiple validation errors
+// returned by SagaOrderReq.ValidateAll() if the designated constraints aren't met.
+type SagaOrderReqMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SagaOrderReqMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SagaOrderReqMultiError) AllErrors() []error { return m }
+
+// SagaOrderReqValidationError is the validation error returned by
+// SagaOrderReq.Validate if the designated constraints aren't met.
+type SagaOrderReqValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SagaOrderReqValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SagaOrderReqValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SagaOrderReqValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SagaOrderReqValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SagaOrderReqValidationError) ErrorName() string { return "SagaOrderReqValidationError" }
+
+// Error satisfies the builtin error interface
+func (e SagaOrderReqValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSagaOrderReq.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SagaOrderReqValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SagaOrderReqValidationError{}
+
+// Validate checks the field values on SagaOrderResp with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *SagaOrderResp) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SagaOrderResp with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in SagaOrderRespMultiError, or
+// nil if none found.
+func (m *SagaOrderResp) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SagaOrderResp) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	// no validation rules for Message
+
+	if len(errors) > 0 {
+		return SagaOrderRespMultiError(errors)
+	}
+
+	return nil
+}
+
+// SagaOrderRespMultiError is an error wrapping multiple validation errors
+// returned by SagaOrderResp.ValidateAll() if the designated constraints
+// aren't met.
+type SagaOrderRespMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SagaOrderRespMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SagaOrderRespMultiError) AllErrors() []error { return m }
+
+// SagaOrderRespValidationError is the validation error returned by
+// SagaOrderResp.Validate if the designated constraints aren't met.
+type SagaOrderRespValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SagaOrderRespValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SagaOrderRespValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SagaOrderRespValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SagaOrderRespValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SagaOrderRespValidationError) ErrorName() string { return "SagaOrderRespValidationError" }
+
+// Error satisfies the builtin error interface
+func (e SagaOrderRespValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSagaOrderResp.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SagaOrderRespValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SagaOrderRespValidationError{}

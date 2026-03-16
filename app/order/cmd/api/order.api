@@ -10,8 +10,8 @@ info (
 type (
 	// 创建订单请求
 	CreateOrderReq {
-		EventId int64 `json:"event_id" validate:"required,min=1"`
-		SeatId  int64 `json:"seat_id" validate:"required,min=1"`
+		EventId int64 `json:"event_id,optional" validate:"required,min=1"`
+		SeatId  int64 `json:"seat_id,optional" validate:"required,min=1"`
 	}
 	// 创建订单响应
 	CreateOrderResp {
@@ -21,7 +21,7 @@ type (
 	}
 	// 查询订单详情请求
 	OrderDetailReq {
-		OrderSn string `form:"order_sn" validate:"required,min=1"`
+		OrderSn string `form:"order_sn,optional" validate:"required,min=1"`
 	}
 	// 查询订单详情响应
 	OrderDetailResp {
@@ -29,7 +29,7 @@ type (
 		EventId    int64   `json:"event_id"`
 		SeatId     int64   `json:"seat_id"`
 		Amount     float64 `json:"amount"`
-		Status     int64   `json:"status"` // 0待支付, 1已支付, 2超时取消, 3已出票
+		Status     int64   `json:"status"` // 订单状态: 10待支付, 20已支付(待出票), 30已出票(已完成)，40超时关闭，51已退款
 		ExpireTime string  `json:"expire_time"`
 		CreateTime string  `json:"create_time"`
 	}
@@ -37,15 +37,23 @@ type (
 
 // 必须登录验证的接口
 @server (
-	prefix: order/v1
-	group:  order
-	jwt:    Auth // 开启 JWT 认证，验证通过后可通过 ctx.Value("jwtUserId") 获取用户ID
+	prefix:     order/v1
+	group:      order
+	jwt:        Auth // 开启 JWT 认证，验证通过后可通过 ctx.Value("jwtUserId") 获取用户ID
+	middleware: RateLimitMiddleware // 全局日志中间件，记录请求日志
 )
 service order-api {
 	@doc "创建抢票订单(锁座+创单)"
 	@handler createOrder
 	post /create (CreateOrderReq) returns (CreateOrderResp)
+}
 
+@server (
+	prefix: order/v1
+	group:  order
+	jwt:    Auth // 开启 JWT 认证，验证通过后可通过 ctx.Value("jwtUserId") 获取用户ID
+)
+service order-api {
 	@doc "获取订单详情"
 	@handler getOrderDetail
 	get /detail (OrderDetailReq) returns (OrderDetailResp)

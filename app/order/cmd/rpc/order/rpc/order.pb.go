@@ -289,6 +289,153 @@ func (x *GetOrderDetailResp) GetCreateTime() int64 {
 	return 0
 }
 
+// 1.3 DTM Saga 请求体 (包含了支付和出票所需要的所有参数)
+// 为了接收 DTM 的统一 Payload，定义与 Payment 一样的请求体
+// (虽然名字可以不同，但字段序号和类型需一致，方便 gRPC 自动反序列化)
+type SagaOrderReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderSn       string                 `protobuf:"bytes,1,opt,name=order_sn,json=orderSn,proto3" json:"order_sn,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Amount        int64                  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	SeatId        int64                  `protobuf:"varint,4,opt,name=seat_id,json=seatId,proto3" json:"seat_id,omitempty"`
+	EventId       int64                  `protobuf:"varint,5,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	Section       string                 `protobuf:"bytes,6,opt,name=section,proto3" json:"section,omitempty"` // 为了支持BitMap所做的优化
+	SeatIndex     int64                  `protobuf:"varint,7,opt,name=seat_index,json=seatIndex,proto3" json:"seat_index,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SagaOrderReq) Reset() {
+	*x = SagaOrderReq{}
+	mi := &file_order_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SagaOrderReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SagaOrderReq) ProtoMessage() {}
+
+func (x *SagaOrderReq) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SagaOrderReq.ProtoReflect.Descriptor instead.
+func (*SagaOrderReq) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *SagaOrderReq) GetOrderSn() string {
+	if x != nil {
+		return x.OrderSn
+	}
+	return ""
+}
+
+func (x *SagaOrderReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *SagaOrderReq) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *SagaOrderReq) GetSeatId() int64 {
+	if x != nil {
+		return x.SeatId
+	}
+	return 0
+}
+
+func (x *SagaOrderReq) GetEventId() int64 {
+	if x != nil {
+		return x.EventId
+	}
+	return 0
+}
+
+func (x *SagaOrderReq) GetSection() string {
+	if x != nil {
+		return x.Section
+	}
+	return ""
+}
+
+func (x *SagaOrderReq) GetSeatIndex() int64 {
+	if x != nil {
+		return x.SeatIndex
+	}
+	return 0
+}
+
+type SagaOrderResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SagaOrderResp) Reset() {
+	*x = SagaOrderResp{}
+	mi := &file_order_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SagaOrderResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SagaOrderResp) ProtoMessage() {}
+
+func (x *SagaOrderResp) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SagaOrderResp.ProtoReflect.Descriptor instead.
+func (*SagaOrderResp) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *SagaOrderResp) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *SagaOrderResp) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_order_proto protoreflect.FileDescriptor
 
 const file_order_proto_rawDesc = "" +
@@ -315,10 +462,24 @@ const file_order_proto_rawDesc = "" +
 	"\vexpire_time\x18\x06 \x01(\x03R\n" +
 	"expireTime\x12\x1f\n" +
 	"\vcreate_time\x18\a \x01(\x03R\n" +
-	"createTime2\x93\x01\n" +
+	"createTime\"\xc7\x01\n" +
+	"\fSagaOrderReq\x12\x19\n" +
+	"\border_sn\x18\x01 \x01(\tR\aorderSn\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x16\n" +
+	"\x06amount\x18\x03 \x01(\x03R\x06amount\x12\x17\n" +
+	"\aseat_id\x18\x04 \x01(\x03R\x06seatId\x12\x19\n" +
+	"\bevent_id\x18\x05 \x01(\x03R\aeventId\x12\x18\n" +
+	"\asection\x18\x06 \x01(\tR\asection\x12\x1d\n" +
+	"\n" +
+	"seat_index\x18\a \x01(\x03R\tseatIndex\"C\n" +
+	"\rSagaOrderResp\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage2\x8a\x02\n" +
 	"\fOrderService\x12<\n" +
 	"\vCreateOrder\x12\x15.order.CreateOrderReq\x1a\x16.order.CreateOrderResp\x12E\n" +
-	"\x0eGetOrderDetail\x12\x18.order.GetOrderDetailReq\x1a\x19.order.GetOrderDetailRespB\vZ\torder/rpcb\x06proto3"
+	"\x0eGetOrderDetail\x12\x18.order.GetOrderDetailReq\x1a\x19.order.GetOrderDetailResp\x128\n" +
+	"\vIssueTicket\x12\x13.order.SagaOrderReq\x1a\x14.order.SagaOrderResp\x12;\n" +
+	"\x0eRollbackTicket\x12\x13.order.SagaOrderReq\x1a\x14.order.SagaOrderRespB\vZ\torder/rpcb\x06proto3"
 
 var (
 	file_order_proto_rawDescOnce sync.Once
@@ -332,20 +493,26 @@ func file_order_proto_rawDescGZIP() []byte {
 	return file_order_proto_rawDescData
 }
 
-var file_order_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_order_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_order_proto_goTypes = []any{
 	(*CreateOrderReq)(nil),     // 0: order.CreateOrderReq
 	(*CreateOrderResp)(nil),    // 1: order.CreateOrderResp
 	(*GetOrderDetailReq)(nil),  // 2: order.GetOrderDetailReq
 	(*GetOrderDetailResp)(nil), // 3: order.GetOrderDetailResp
+	(*SagaOrderReq)(nil),       // 4: order.SagaOrderReq
+	(*SagaOrderResp)(nil),      // 5: order.SagaOrderResp
 }
 var file_order_proto_depIdxs = []int32{
 	0, // 0: order.OrderService.CreateOrder:input_type -> order.CreateOrderReq
 	2, // 1: order.OrderService.GetOrderDetail:input_type -> order.GetOrderDetailReq
-	1, // 2: order.OrderService.CreateOrder:output_type -> order.CreateOrderResp
-	3, // 3: order.OrderService.GetOrderDetail:output_type -> order.GetOrderDetailResp
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	4, // 2: order.OrderService.IssueTicket:input_type -> order.SagaOrderReq
+	4, // 3: order.OrderService.RollbackTicket:input_type -> order.SagaOrderReq
+	1, // 4: order.OrderService.CreateOrder:output_type -> order.CreateOrderResp
+	3, // 5: order.OrderService.GetOrderDetail:output_type -> order.GetOrderDetailResp
+	5, // 6: order.OrderService.IssueTicket:output_type -> order.SagaOrderResp
+	5, // 7: order.OrderService.RollbackTicket:output_type -> order.SagaOrderResp
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -362,7 +529,7 @@ func file_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_order_proto_rawDesc), len(file_order_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

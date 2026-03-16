@@ -1,0 +1,46 @@
+// rpc/payment/payment.proto
+syntax = "proto3";
+
+package payment;
+option go_package = "payment/rpc";
+import "validate/rpcvalidate.proto";
+
+// --- DTM Saga 通用请求体 ---
+// 包含了支付和出票所需要的所有参数
+message SagaPayReq {
+  string order_sn = 1; // 订单号 (用于日志跟踪和防重)
+  int64 user_id = 2;   // 用户ID (用于扣减 user_wallet)
+  int64 amount = 3;    // 支付金额 (单位：分)
+  int64 seat_id = 4;   // 座位ID (支付侧不用，但Order侧需要)
+  int64 event_id = 5;  // 场次ID (支付侧不用，但Order侧需要)
+  string section = 6; // 为了支持BitMap所做的优化（支付侧不用，但Order侧需要）
+  int64 seat_index = 7;
+}
+
+message SagaPayResp {
+  bool success = 1;
+  string message = 2;
+}
+
+// 支付请求体 (供 API 层调用)
+message PayReq {
+  string order_sn = 1 [(validate.rules).string = {min_len: 1}]; // 订单号，必填且不能为空
+  int64 user_id = 2 [(validate.rules).int64 = {gt: 0}];  // 核心安全校验：必须传入 user_id，防止水平越权
+}
+
+message PayResp {
+  bool success = 1;
+  string message = 2;
+}
+
+// 支付 RPC 服务
+service Payment {
+  // Saga 步骤1 正向操作：扣减余额
+  rpc Deduct(SagaPayReq) returns (SagaPayResp);
+
+  // Saga 步骤2 补偿操作：退还余额
+  rpc Refund(SagaPayReq) returns (SagaPayResp);
+
+  // API 层调用的支付接口
+  rpc Pay(PayReq) returns (PayResp);
+}

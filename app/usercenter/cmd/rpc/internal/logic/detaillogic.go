@@ -3,8 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
-	"tickets-hunter/app/usercenter/model"
-
+	"tickets-hunter/app/model/usercenter"
 	"tickets-hunter/app/usercenter/cmd/rpc/internal/svc"
 	"tickets-hunter/app/usercenter/cmd/rpc/usercenter/rpc"
 
@@ -30,7 +29,7 @@ func NewDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *DetailLogi
 func (l *DetailLogic) Detail(in *rpc.DetailReq) (*rpc.DetailResp, error) {
 	user, err := l.svcCtx.UserModel.FindOne(l.ctx, in.Id)
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		if errors.Is(err, usercenter.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, "用户不存在")
 		}
 		return nil, err

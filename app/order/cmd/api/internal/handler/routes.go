@@ -14,13 +14,23 @@ import (
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.RateLimitMiddleware},
+			[]rest.Route{
+				{
+					// 创建抢票订单(锁座+创单)
+					Method:  http.MethodPost,
+					Path:    "/create",
+					Handler: order.CreateOrderHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+		rest.WithPrefix("/order/v1"),
+	)
+
+	server.AddRoutes(
 		[]rest.Route{
-			{
-				// 创建抢票订单(锁座+创单)
-				Method:  http.MethodPost,
-				Path:    "/create",
-				Handler: order.CreateOrderHandler(serverCtx),
-			},
 			{
 				// 获取订单详情
 				Method:  http.MethodGet,

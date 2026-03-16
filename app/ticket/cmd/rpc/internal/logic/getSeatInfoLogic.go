@@ -2,8 +2,7 @@ package logic
 
 import (
 	"context"
-	"tickets-hunter/app/ticket/model/ticket_seat"
-
+	"tickets-hunter/app/model/ticket_seat"
 	"tickets-hunter/app/ticket/cmd/rpc/internal/svc"
 	"tickets-hunter/app/ticket/cmd/rpc/ticket/rpc"
 
@@ -38,13 +37,14 @@ func (l *GetSeatInfoLogic) GetSeatInfo(in *rpc.GetSeatInfoReq) (*rpc.SeatInfo, e
 
 	// 转换为 RPC 层的 SeatInfo
 	seatInfo := &rpc.SeatInfo{
-		Id:       seat.Id,
-		SeatType: seat.SeatType,
-		Section:  seat.Section,
-		RowNo:    seat.RowNo,
-		SeatNo:   seat.SeatNo,
-		Price:    seat.Price,
-		Status:   seat.Status,
+		Id:        seat.Id,
+		SeatType:  seat.SeatType,
+		Section:   seat.Section,
+		RowNo:     seat.RowNo,
+		SeatNo:    seat.SeatNo,
+		Price:     seat.Price,
+		Status:    seat.Status,
+		SeatIndex: seat.SeatIndex,
 	}
 
 	return seatInfo, nil

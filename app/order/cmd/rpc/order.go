@@ -7,10 +7,11 @@ import (
 	"tickets-hunter/app/order/cmd/rpc/internal/server"
 	"tickets-hunter/app/order/cmd/rpc/internal/svc"
 	"tickets-hunter/app/order/cmd/rpc/order/rpc"
-	"tickets-hunter/common/interceptor"
 
 	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/load"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
@@ -18,6 +19,11 @@ import (
 )
 
 var configFile = flag.String("f", "etc/order.yaml", "the config file")
+
+func init() {
+	load.Disable() // 关闭CPU降载
+	logx.Disable()
+}
 
 func main() {
 	flag.Parse()
@@ -38,7 +44,7 @@ func main() {
 	// 添加中间件
 	s.AddUnaryInterceptors(
 		// 添加全局错误处理中间件
-		interceptor.ServerErrorInterceptor,
+		//interceptor.ServerErrorInterceptor,
 		// 添加全局参数校验中间件。注意，必须在全局错误处理中间件之后添加，否则参数校验失败时错误信息将无法正确传递到错误处理中间件中。
 		grpc_validator.UnaryServerInterceptor(),
 	)

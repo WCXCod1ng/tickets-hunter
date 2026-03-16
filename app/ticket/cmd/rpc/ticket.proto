@@ -31,6 +31,7 @@ message SeatInfo {
   int64 seat_no = 5;    // 座位号
   int64 price = 6;     // 价格 (用int64分来表示金额)
   int64 status = 7;     // 状态: 0可选, 1锁定(未支付), 2已售(已出票)
+  int64 seat_index = 8; // 同一个区域内的座位索引
 }
 
 
@@ -62,6 +63,9 @@ message GetSeatListResp {
 message LockSeatReq {
   int64 event_id = 1 [(validate.rules).int64 = {gt: 0}];
   int64 seat_id = 2 [(validate.rules).int64 = {gt: 0}];
+  string order_sn = 3 [(validate.rules).string = {min_len: 1}]; // 订单号，用于锁定座位
+  int64 seat_index = 4 [(validate.rules).int64 = {gte: 0}]; // 使用BitMap进行的优化
+  string section = 5 [(validate.rules).string = {min_len: 1}];
 }
 
 message LockSeatResp {
@@ -73,6 +77,50 @@ message GetSeatInfoReq {
   int64 seat_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// 2.5 有效座位集合缓存预热
+message WarmUpValidSeatsReq {
+  int64 event_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message WarmUpValidSeatsResp {
+  bool success = 1;     // 是否预热成功
+}
+
+// 2.6 取消锁定座位 (供 Order RPC 内部调用)
+message UnlockSeatReq {
+  int64 seat_id = 2 [(validate.rules).int64 = {gt: 0}];
+  string order_sn = 3 [(validate.rules).string = {min_len: 1}]; // 订单号，用于解锁座位
+  int64 seat_index = 4 [(validate.rules).int64 = {gte: 0}]; // 使用BitMap进行的优化
+  string section = 5 [(validate.rules).string = {min_len: 1}];
+  int64 event_id = 6 [(validate.rules).int64 = {gt: 0}]; // 场次Id
+}
+
+message UnlockSeatResp {
+  bool success = 1;     // 是否解锁成功
+}
+
+// 2.7 释放座位
+message ReleaseSeatReq {
+  int64 seat_id = 1 [(validate.rules).int64 = {gt: 0}];
+  string order_sn = 2 [(validate.rules).string = {min_len: 1}]; // 订单号，用于释放座位
+  int64 seat_index = 4 [(validate.rules).int64 = {gte: 0}]; // 使用BitMap进行的优化
+  string section = 5 [(validate.rules).string = {min_len: 1}];
+  int64 event_id = 6 [(validate.rules).int64 = {gt: 0}]; // 场次Id
+}
+
+message ReleaseSeatResp {
+  bool success = 1;     // 是否释放成功
+}
+
+// 2.8 获取指定区域的座位状态
+message GetSeatBitMapReq {
+  int64 event_id = 1 [(validate.rules).int64 = {gt: 0}]; // 场次ID
+  string section = 2 [(validate.rules).string = {min_len: 1}]; // 区域信息
+}
+
+message GetSeatBitMapResp {
+  string bitmap = 1; // bitmap信息
+}
 
 // ==========================================
 // 3. 服务定义 Service
@@ -90,4 +138,16 @@ service TicketService {
 
   // 获取座位信息 (供 Order RPC 内部调用)
   rpc GetSeatInfo(GetSeatInfoReq) returns(SeatInfo);
+
+  // 有效座位集合缓存预热 (内部隐藏接口，实际场景中可能由定时任务调用)
+  rpc WarmUpValidSeats(WarmUpValidSeatsReq) returns(WarmUpValidSeatsResp);
+
+  // 取消锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+  rpc UnlockSeat(UnlockSeatReq) returns(UnlockSeatResp);
+
+  // 释放座位，供订单支付超时或用户取消订单时调用，更新MySQL的座位状态为可选，并删除Redis中的锁定状态
+  rpc ReleaseSeat(ReleaseSeatReq) returns(ReleaseSeatResp);
+
+  // 获取BitMap信息
+  rpc GetSeatBitMap(GetSeatBitMapReq) returns(GetEventListResp);
 }

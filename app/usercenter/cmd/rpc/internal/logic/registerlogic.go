@@ -3,7 +3,7 @@ package logic
 import (
 	"context"
 	"database/sql"
-	"tickets-hunter/app/usercenter/model"
+	"tickets-hunter/app/model/usercenter"
 	"tickets-hunter/common/utils"
 	"time"
 
@@ -49,7 +49,7 @@ func (l *RegisterLogic) Register(in *rpc.RegisterReq) (*rpc.RegisterResp, error)
 
 	// 到此说明手机号不重复
 	// 生成并插入数据
-	user := &model.User{
+	user := &usercenter.User{
 		Id:         id,
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),

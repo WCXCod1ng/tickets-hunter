@@ -22,6 +22,8 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	OrderService_CreateOrder_FullMethodName    = "/order.OrderService/CreateOrder"
 	OrderService_GetOrderDetail_FullMethodName = "/order.OrderService/GetOrderDetail"
+	OrderService_IssueTicket_FullMethodName    = "/order.OrderService/IssueTicket"
+	OrderService_RollbackTicket_FullMethodName = "/order.OrderService/RollbackTicket"
 )
 
 // OrderServiceClient is the client API for OrderService service.
@@ -32,6 +34,12 @@ type OrderServiceClient interface {
 	CreateOrder(ctx context.Context, in *CreateOrderReq, opts ...grpc.CallOption) (*CreateOrderResp, error)
 	// 获取订单详情
 	GetOrderDetail(ctx context.Context, in *GetOrderDetailReq, opts ...grpc.CallOption) (*GetOrderDetailResp, error)
+	// Saga 步骤2 正向操作：确认出票
+	// (逻辑：座位变 2 已售，订单变 30 已出票)
+	IssueTicket(ctx context.Context, in *SagaOrderReq, opts ...grpc.CallOption) (*SagaOrderResp, error)
+	// Saga 步骤2 补偿操作：回滚出票
+	// (逻辑：座位变 0 可选，订单变 51 已退款关闭)
+	RollbackTicket(ctx context.Context, in *SagaOrderReq, opts ...grpc.CallOption) (*SagaOrderResp, error)
 }
 
 type orderServiceClient struct {
@@ -62,6 +70,26 @@ func (c *orderServiceClient) GetOrderDetail(ctx context.Context, in *GetOrderDet
 	return out, nil
 }
 
+func (c *orderServiceClient) IssueTicket(ctx context.Context, in *SagaOrderReq, opts ...grpc.CallOption) (*SagaOrderResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SagaOrderResp)
+	err := c.cc.Invoke(ctx, OrderService_IssueTicket_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderServiceClient) RollbackTicket(ctx context.Context, in *SagaOrderReq, opts ...grpc.CallOption) (*SagaOrderResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SagaOrderResp)
+	err := c.cc.Invoke(ctx, OrderService_RollbackTicket_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrderServiceServer is the server API for OrderService service.
 // All implementations must embed UnimplementedOrderServiceServer
 // for forward compatibility.
@@ -70,6 +98,12 @@ type OrderServiceServer interface {
 	CreateOrder(context.Context, *CreateOrderReq) (*CreateOrderResp, error)
 	// 获取订单详情
 	GetOrderDetail(context.Context, *GetOrderDetailReq) (*GetOrderDetailResp, error)
+	// Saga 步骤2 正向操作：确认出票
+	// (逻辑：座位变 2 已售，订单变 30 已出票)
+	IssueTicket(context.Context, *SagaOrderReq) (*SagaOrderResp, error)
+	// Saga 步骤2 补偿操作：回滚出票
+	// (逻辑：座位变 0 可选，订单变 51 已退款关闭)
+	RollbackTicket(context.Context, *SagaOrderReq) (*SagaOrderResp, error)
 	mustEmbedUnimplementedOrderServiceServer()
 }
 
@@ -85,6 +119,12 @@ func (UnimplementedOrderServiceServer) CreateOrder(context.Context, *CreateOrder
 }
 func (UnimplementedOrderServiceServer) GetOrderDetail(context.Context, *GetOrderDetailReq) (*GetOrderDetailResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetOrderDetail not implemented")
+}
+func (UnimplementedOrderServiceServer) IssueTicket(context.Context, *SagaOrderReq) (*SagaOrderResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method IssueTicket not implemented")
+}
+func (UnimplementedOrderServiceServer) RollbackTicket(context.Context, *SagaOrderReq) (*SagaOrderResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method RollbackTicket not implemented")
 }
 func (UnimplementedOrderServiceServer) mustEmbedUnimplementedOrderServiceServer() {}
 func (UnimplementedOrderServiceServer) testEmbeddedByValue()                      {}
@@ -143,6 +183,42 @@ func _OrderService_GetOrderDetail_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OrderService_IssueTicket_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SagaOrderReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServiceServer).IssueTicket(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OrderService_IssueTicket_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServiceServer).IssueTicket(ctx, req.(*SagaOrderReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _OrderService_RollbackTicket_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SagaOrderReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServiceServer).RollbackTicket(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OrderService_RollbackTicket_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServiceServer).RollbackTicket(ctx, req.(*SagaOrderReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OrderService_ServiceDesc is the grpc.ServiceDesc for OrderService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -157,6 +233,14 @@ var OrderService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetOrderDetail",
 			Handler:    _OrderService_GetOrderDetail_Handler,
+		},
+		{
+			MethodName: "IssueTicket",
+			Handler:    _OrderService_IssueTicket_Handler,
+		},
+		{
+			MethodName: "RollbackTicket",
+			Handler:    _OrderService_RollbackTicket_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

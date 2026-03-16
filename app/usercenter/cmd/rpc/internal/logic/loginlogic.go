@@ -3,7 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
-	"tickets-hunter/app/usercenter/model"
+	"tickets-hunter/app/model/usercenter"
 	"tickets-hunter/common/utils"
 	"tickets-hunter/common/xerr"
 
@@ -32,7 +32,7 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 
 func (l *LoginLogic) Login(in *rpc.LoginReq) (*rpc.LoginResp, error) {
 	user, err := l.svcCtx.UserModel.FindOneByMobile(l.ctx, in.Mobile)
-	if errors.Is(err, model.ErrNotFound) {
+	if errors.Is(err, usercenter.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "用户不存在")
 	} else if err != nil {
 		return nil, errors2.WithStack(status.Error(codes.Internal, err.Error()))

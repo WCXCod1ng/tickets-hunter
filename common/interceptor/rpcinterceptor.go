@@ -34,6 +34,11 @@ func ServerErrorInterceptor(ctx context.Context, req interface{}, info *grpc.Una
 		// 获取根因错误码
 		errCode := s.Code()
 
+		// 不应当拦截codes.Aborted错误，因为它是DTM分布式事务框架用来触发补偿逻辑的特定错误码，拦截后会导致DTM无法正确识别业务错误，无法执行补偿逻辑
+		if errCode == codes.Aborted {
+			return resp, err
+		}
+
 		// 利用根因错误码判断错误类型
 		if xerr.IsServerError(uint32(errCode)) {
 			// === 场景 A：系统错误 (如：DB连接失败、空指针、Redis超时) ===

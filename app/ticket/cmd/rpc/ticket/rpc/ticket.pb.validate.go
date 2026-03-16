@@ -186,6 +186,8 @@ func (m *SeatInfo) validate(all bool) error {
 
 	// no validation rules for Status
 
+	// no validation rules for SeatIndex
+
 	if len(errors) > 0 {
 		return SeatInfoMultiError(errors)
 	}
@@ -788,6 +790,39 @@ func (m *LockSeatReq) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if utf8.RuneCountInString(m.GetOrderSn()) < 1 {
+		err := LockSeatReqValidationError{
+			field:  "OrderSn",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetSeatIndex() < 0 {
+		err := LockSeatReqValidationError{
+			field:  "SeatIndex",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetSection()) < 1 {
+		err := LockSeatReqValidationError{
+			field:  "Section",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if len(errors) > 0 {
 		return LockSeatReqMultiError(errors)
 	}
@@ -1076,3 +1111,960 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetSeatInfoReqValidationError{}
+
+// Validate checks the field values on WarmUpValidSeatsReq with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WarmUpValidSeatsReq) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WarmUpValidSeatsReq with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WarmUpValidSeatsReqMultiError, or nil if none found.
+func (m *WarmUpValidSeatsReq) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WarmUpValidSeatsReq) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetEventId() <= 0 {
+		err := WarmUpValidSeatsReqValidationError{
+			field:  "EventId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return WarmUpValidSeatsReqMultiError(errors)
+	}
+
+	return nil
+}
+
+// WarmUpValidSeatsReqMultiError is an error wrapping multiple validation
+// errors returned by WarmUpValidSeatsReq.ValidateAll() if the designated
+// constraints aren't met.
+type WarmUpValidSeatsReqMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WarmUpValidSeatsReqMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WarmUpValidSeatsReqMultiError) AllErrors() []error { return m }
+
+// WarmUpValidSeatsReqValidationError is the validation error returned by
+// WarmUpValidSeatsReq.Validate if the designated constraints aren't met.
+type WarmUpValidSeatsReqValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WarmUpValidSeatsReqValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WarmUpValidSeatsReqValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WarmUpValidSeatsReqValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WarmUpValidSeatsReqValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WarmUpValidSeatsReqValidationError) ErrorName() string {
+	return "WarmUpValidSeatsReqValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WarmUpValidSeatsReqValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWarmUpValidSeatsReq.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WarmUpValidSeatsReqValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WarmUpValidSeatsReqValidationError{}
+
+// Validate checks the field values on WarmUpValidSeatsResp with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *WarmUpValidSeatsResp) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on WarmUpValidSeatsResp with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// WarmUpValidSeatsRespMultiError, or nil if none found.
+func (m *WarmUpValidSeatsResp) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *WarmUpValidSeatsResp) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return WarmUpValidSeatsRespMultiError(errors)
+	}
+
+	return nil
+}
+
+// WarmUpValidSeatsRespMultiError is an error wrapping multiple validation
+// errors returned by WarmUpValidSeatsResp.ValidateAll() if the designated
+// constraints aren't met.
+type WarmUpValidSeatsRespMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m WarmUpValidSeatsRespMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m WarmUpValidSeatsRespMultiError) AllErrors() []error { return m }
+
+// WarmUpValidSeatsRespValidationError is the validation error returned by
+// WarmUpValidSeatsResp.Validate if the designated constraints aren't met.
+type WarmUpValidSeatsRespValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e WarmUpValidSeatsRespValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e WarmUpValidSeatsRespValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e WarmUpValidSeatsRespValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e WarmUpValidSeatsRespValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e WarmUpValidSeatsRespValidationError) ErrorName() string {
+	return "WarmUpValidSeatsRespValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e WarmUpValidSeatsRespValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sWarmUpValidSeatsResp.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = WarmUpValidSeatsRespValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = WarmUpValidSeatsRespValidationError{}
+
+// Validate checks the field values on UnlockSeatReq with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *UnlockSeatReq) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UnlockSeatReq with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in UnlockSeatReqMultiError, or
+// nil if none found.
+func (m *UnlockSeatReq) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UnlockSeatReq) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetSeatId() <= 0 {
+		err := UnlockSeatReqValidationError{
+			field:  "SeatId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetOrderSn()) < 1 {
+		err := UnlockSeatReqValidationError{
+			field:  "OrderSn",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetSeatIndex() < 0 {
+		err := UnlockSeatReqValidationError{
+			field:  "SeatIndex",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetSection()) < 1 {
+		err := UnlockSeatReqValidationError{
+			field:  "Section",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetEventId() <= 0 {
+		err := UnlockSeatReqValidationError{
+			field:  "EventId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return UnlockSeatReqMultiError(errors)
+	}
+
+	return nil
+}
+
+// UnlockSeatReqMultiError is an error wrapping multiple validation errors
+// returned by UnlockSeatReq.ValidateAll() if the designated constraints
+// aren't met.
+type UnlockSeatReqMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UnlockSeatReqMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UnlockSeatReqMultiError) AllErrors() []error { return m }
+
+// UnlockSeatReqValidationError is the validation error returned by
+// UnlockSeatReq.Validate if the designated constraints aren't met.
+type UnlockSeatReqValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UnlockSeatReqValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UnlockSeatReqValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UnlockSeatReqValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UnlockSeatReqValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UnlockSeatReqValidationError) ErrorName() string { return "UnlockSeatReqValidationError" }
+
+// Error satisfies the builtin error interface
+func (e UnlockSeatReqValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUnlockSeatReq.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UnlockSeatReqValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UnlockSeatReqValidationError{}
+
+// Validate checks the field values on UnlockSeatResp with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *UnlockSeatResp) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UnlockSeatResp with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in UnlockSeatRespMultiError,
+// or nil if none found.
+func (m *UnlockSeatResp) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UnlockSeatResp) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return UnlockSeatRespMultiError(errors)
+	}
+
+	return nil
+}
+
+// UnlockSeatRespMultiError is an error wrapping multiple validation errors
+// returned by UnlockSeatResp.ValidateAll() if the designated constraints
+// aren't met.
+type UnlockSeatRespMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UnlockSeatRespMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UnlockSeatRespMultiError) AllErrors() []error { return m }
+
+// UnlockSeatRespValidationError is the validation error returned by
+// UnlockSeatResp.Validate if the designated constraints aren't met.
+type UnlockSeatRespValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UnlockSeatRespValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UnlockSeatRespValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UnlockSeatRespValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UnlockSeatRespValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UnlockSeatRespValidationError) ErrorName() string { return "UnlockSeatRespValidationError" }
+
+// Error satisfies the builtin error interface
+func (e UnlockSeatRespValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUnlockSeatResp.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UnlockSeatRespValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UnlockSeatRespValidationError{}
+
+// Validate checks the field values on ReleaseSeatReq with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ReleaseSeatReq) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ReleaseSeatReq with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ReleaseSeatReqMultiError,
+// or nil if none found.
+func (m *ReleaseSeatReq) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReleaseSeatReq) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetSeatId() <= 0 {
+		err := ReleaseSeatReqValidationError{
+			field:  "SeatId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetOrderSn()) < 1 {
+		err := ReleaseSeatReqValidationError{
+			field:  "OrderSn",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetSeatIndex() < 0 {
+		err := ReleaseSeatReqValidationError{
+			field:  "SeatIndex",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetSection()) < 1 {
+		err := ReleaseSeatReqValidationError{
+			field:  "Section",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetEventId() <= 0 {
+		err := ReleaseSeatReqValidationError{
+			field:  "EventId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ReleaseSeatReqMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReleaseSeatReqMultiError is an error wrapping multiple validation errors
+// returned by ReleaseSeatReq.ValidateAll() if the designated constraints
+// aren't met.
+type ReleaseSeatReqMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReleaseSeatReqMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReleaseSeatReqMultiError) AllErrors() []error { return m }
+
+// ReleaseSeatReqValidationError is the validation error returned by
+// ReleaseSeatReq.Validate if the designated constraints aren't met.
+type ReleaseSeatReqValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReleaseSeatReqValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReleaseSeatReqValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReleaseSeatReqValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReleaseSeatReqValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReleaseSeatReqValidationError) ErrorName() string { return "ReleaseSeatReqValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ReleaseSeatReqValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReleaseSeatReq.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReleaseSeatReqValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReleaseSeatReqValidationError{}
+
+// Validate checks the field values on ReleaseSeatResp with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ReleaseSeatResp) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ReleaseSeatResp with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ReleaseSeatRespMultiError, or nil if none found.
+func (m *ReleaseSeatResp) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReleaseSeatResp) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return ReleaseSeatRespMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReleaseSeatRespMultiError is an error wrapping multiple validation errors
+// returned by ReleaseSeatResp.ValidateAll() if the designated constraints
+// aren't met.
+type ReleaseSeatRespMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReleaseSeatRespMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReleaseSeatRespMultiError) AllErrors() []error { return m }
+
+// ReleaseSeatRespValidationError is the validation error returned by
+// ReleaseSeatResp.Validate if the designated constraints aren't met.
+type ReleaseSeatRespValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReleaseSeatRespValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReleaseSeatRespValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReleaseSeatRespValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReleaseSeatRespValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReleaseSeatRespValidationError) ErrorName() string { return "ReleaseSeatRespValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ReleaseSeatRespValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReleaseSeatResp.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReleaseSeatRespValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReleaseSeatRespValidationError{}
+
+// Validate checks the field values on GetSeatBitMapReq with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetSeatBitMapReq) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetSeatBitMapReq with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetSeatBitMapReqMultiError, or nil if none found.
+func (m *GetSeatBitMapReq) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetSeatBitMapReq) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetEventId() <= 0 {
+		err := GetSeatBitMapReqValidationError{
+			field:  "EventId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetSection()) < 1 {
+		err := GetSeatBitMapReqValidationError{
+			field:  "Section",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetSeatBitMapReqMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetSeatBitMapReqMultiError is an error wrapping multiple validation errors
+// returned by GetSeatBitMapReq.ValidateAll() if the designated constraints
+// aren't met.
+type GetSeatBitMapReqMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetSeatBitMapReqMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetSeatBitMapReqMultiError) AllErrors() []error { return m }
+
+// GetSeatBitMapReqValidationError is the validation error returned by
+// GetSeatBitMapReq.Validate if the designated constraints aren't met.
+type GetSeatBitMapReqValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetSeatBitMapReqValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetSeatBitMapReqValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetSeatBitMapReqValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetSeatBitMapReqValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetSeatBitMapReqValidationError) ErrorName() string { return "GetSeatBitMapReqValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GetSeatBitMapReqValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetSeatBitMapReq.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetSeatBitMapReqValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetSeatBitMapReqValidationError{}
+
+// Validate checks the field values on GetSeatBitMapResp with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetSeatBitMapResp) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetSeatBitMapResp with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetSeatBitMapRespMultiError, or nil if none found.
+func (m *GetSeatBitMapResp) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetSeatBitMapResp) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Bitmap
+
+	if len(errors) > 0 {
+		return GetSeatBitMapRespMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetSeatBitMapRespMultiError is an error wrapping multiple validation errors
+// returned by GetSeatBitMapResp.ValidateAll() if the designated constraints
+// aren't met.
+type GetSeatBitMapRespMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetSeatBitMapRespMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetSeatBitMapRespMultiError) AllErrors() []error { return m }
+
+// GetSeatBitMapRespValidationError is the validation error returned by
+// GetSeatBitMapResp.Validate if the designated constraints aren't met.
+type GetSeatBitMapRespValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetSeatBitMapRespValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetSeatBitMapRespValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetSeatBitMapRespValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetSeatBitMapRespValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetSeatBitMapRespValidationError) ErrorName() string {
+	return "GetSeatBitMapRespValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetSeatBitMapRespValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetSeatBitMapResp.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetSeatBitMapRespValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetSeatBitMapRespValidationError{}

@@ -6,9 +6,10 @@ package server
 
 import (
 	"context"
-	logic2 "tickets-hunter/app/order/cmd/rpc/internal/logic"
-	"tickets-hunter/app/order/cmd/rpc/internal/svc"
 	rpc2 "tickets-hunter/app/order/cmd/rpc/order/rpc"
+
+	"tickets-hunter/app/order/cmd/rpc/internal/logic"
+	"tickets-hunter/app/order/cmd/rpc/internal/svc"
 )
 
 type OrderServiceServer struct {
@@ -24,12 +25,24 @@ func NewOrderServiceServer(svcCtx *svc.ServiceContext) *OrderServiceServer {
 
 // 创建抢票订单 (包含调用 Ticket RPC 锁座逻辑)
 func (s *OrderServiceServer) CreateOrder(ctx context.Context, in *rpc2.CreateOrderReq) (*rpc2.CreateOrderResp, error) {
-	l := logic2.NewCreateOrderLogic(ctx, s.svcCtx)
+	l := logic.NewCreateOrderLogic(ctx, s.svcCtx)
 	return l.CreateOrder(in)
 }
 
 // 获取订单详情
 func (s *OrderServiceServer) GetOrderDetail(ctx context.Context, in *rpc2.GetOrderDetailReq) (*rpc2.GetOrderDetailResp, error) {
-	l := logic2.NewGetOrderDetailLogic(ctx, s.svcCtx)
+	l := logic.NewGetOrderDetailLogic(ctx, s.svcCtx)
 	return l.GetOrderDetail(in)
+}
+
+// Saga 步骤2 正向操作：确认出票
+func (s *OrderServiceServer) IssueTicket(ctx context.Context, in *rpc2.SagaOrderReq) (*rpc2.SagaOrderResp, error) {
+	l := logic.NewIssueTicketLogic(ctx, s.svcCtx)
+	return l.IssueTicket(in)
+}
+
+// Saga 步骤2 补偿操作：回滚出票
+func (s *OrderServiceServer) RollbackTicket(ctx context.Context, in *rpc2.SagaOrderReq) (*rpc2.SagaOrderResp, error) {
+	l := logic.NewRollbackTicketLogic(ctx, s.svcCtx)
+	return l.RollbackTicket(in)
 }

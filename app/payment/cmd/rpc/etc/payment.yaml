@@ -1,0 +1,32 @@
+Name: payment.rpc
+ListenOn: 0.0.0.0:8083
+Etcd:
+  Hosts:
+    - 127.0.0.1:2379
+    - 127.0.0.1:22379
+    - 127.0.0.1:32379
+  Key: payment.rpc
+
+DB:
+  DataSource: root:wang@tcp(127.0.0.1:3306)/tickets_hunter?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+
+TicketRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+      - 127.0.0.1:22379
+      - 127.0.0.1:32379
+    Key: ticket.rpc
+  Timeout: 60000
+
+# 日志配置
+Log:
+  ServiceName: payment
+  Level: debug
+  Encoding: plain        # plain | json
+  Path: logs             # 日志目录
+  KeepDays: 7
+  MaxSize: 100           # MB
+  StackCooldownMillis: 100
+
+Timeout: 60000

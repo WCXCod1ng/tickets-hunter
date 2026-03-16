@@ -3,9 +3,9 @@ package logic
 import (
 	"context"
 	"errors"
+	"tickets-hunter/app/model/order_main"
 	"tickets-hunter/app/order/cmd/rpc/internal/svc"
 	"tickets-hunter/app/order/cmd/rpc/order/rpc"
-	"tickets-hunter/app/order/model/order_main"
 
 	errors2 "github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/logx"

@@ -12,6 +12,8 @@ import (
 
 	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/load"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
@@ -19,6 +21,13 @@ import (
 )
 
 var configFile = flag.String("f", "etc/ticket.yaml", "the config file")
+
+func init() {
+	load.Disable() // 关闭CPU降载
+	logx.Disable()
+	m := map[string]string{}
+	delete(m, "s")
+}
 
 func main() {
 	flag.Parse()

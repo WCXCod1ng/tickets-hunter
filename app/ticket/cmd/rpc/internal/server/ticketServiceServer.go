@@ -46,3 +46,27 @@ func (s *TicketServiceServer) GetSeatInfo(ctx context.Context, in *rpc.GetSeatIn
 	l := logic.NewGetSeatInfoLogic(ctx, s.svcCtx)
 	return l.GetSeatInfo(in)
 }
+
+// 有效座位集合缓存预热 (内部隐藏接口，实际场景中可能由定时任务调用)
+func (s *TicketServiceServer) WarmUpValidSeats(ctx context.Context, in *rpc.WarmUpValidSeatsReq) (*rpc.WarmUpValidSeatsResp, error) {
+	l := logic.NewWarmUpValidSeatsLogic(ctx, s.svcCtx)
+	return l.WarmUpValidSeats(in)
+}
+
+// 取消锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+func (s *TicketServiceServer) UnlockSeat(ctx context.Context, in *rpc.UnlockSeatReq) (*rpc.UnlockSeatResp, error) {
+	l := logic.NewUnlockSeatLogic(ctx, s.svcCtx)
+	return l.UnlockSeat(in)
+}
+
+// 释放座位，供订单支付超时或用户取消订单时调用，更新MySQL的座位状态为可选，并删除Redis中的锁定状态
+func (s *TicketServiceServer) ReleaseSeat(ctx context.Context, in *rpc.ReleaseSeatReq) (*rpc.ReleaseSeatResp, error) {
+	l := logic.NewReleaseSeatLogic(ctx, s.svcCtx)
+	return l.ReleaseSeat(in)
+}
+
+// 获取BitMap信息
+func (s *TicketServiceServer) GetSeatBitMap(ctx context.Context, in *rpc.GetSeatBitMapReq) (*rpc.GetEventListResp, error) {
+	l := logic.NewGetSeatBitMapLogic(ctx, s.svcCtx)
+	return l.GetSeatBitMap(in)
+}

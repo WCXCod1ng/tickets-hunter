@@ -14,3 +14,8 @@ const (
 
 // 订单模块
 const ()
+
+// 支付模块
+const (
+	DeductFailed uint32 = 40000 + iota
+)

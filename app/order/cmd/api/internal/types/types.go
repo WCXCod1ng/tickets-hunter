@@ -4,8 +4,8 @@
 package types
 
 type CreateOrderReq struct {
-	EventId int64 `json:"event_id" validate:"required,min=1"`
-	SeatId  int64 `json:"seat_id" validate:"required,min=1"`
+	EventId int64 `json:"event_id,optional" validate:"required,min=1"`
+	SeatId  int64 `json:"seat_id,optional" validate:"required,min=1"`
 }
 
 type CreateOrderResp struct {
@@ -15,7 +15,7 @@ type CreateOrderResp struct {
 }
 
 type OrderDetailReq struct {
-	OrderSn string `form:"order_sn" validate:"required,min=1"`
+	OrderSn string `form:"order_sn,optional" validate:"required,min=1"`
 }
 
 type OrderDetailResp struct {
@@ -23,7 +23,7 @@ type OrderDetailResp struct {
 	EventId    int64   `json:"event_id"`
 	SeatId     int64   `json:"seat_id"`
 	Amount     float64 `json:"amount"`
-	Status     int64   `json:"status"` // 0待支付, 1已支付, 2超时取消, 3已出票
+	Status     int64   `json:"status"` // 订单状态: 10待支付, 20已支付(待出票), 30已出票(已完成)，40超时关闭，51已退款
 	ExpireTime string  `json:"expire_time"`
 	CreateTime string  `json:"create_time"`
 }

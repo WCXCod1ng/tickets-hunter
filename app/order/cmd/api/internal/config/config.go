@@ -19,4 +19,14 @@ type Config struct {
 	OrderRpc zrpc.RpcClientConf `json:"OrderRpc"`
 	// Redis配置
 	Redis redis.RedisConf `json:"Redis"`
+	//// CacheRedis配置
+	//CacheRedis redis.RedisConf `json:"CacheRedis"`
+	// 令牌桶限流器配置
+	TokenLimiter struct {
+		Redis   redis.RedisConf
+		Key     string // Redis中存储令牌桶状态的键
+		Rate    int    // 每秒生成的令牌数
+		Burst   int    // 令牌桶的容量
+		Seconds int    // 时间窗口大小，单位为秒
+	}
 }
