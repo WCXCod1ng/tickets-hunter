@@ -21,6 +21,7 @@ message CreateOrderResp {
   string order_sn = 1;     // 生成的唯一订单号
   int64 amount = 2;       // 订单金额，以分为单位，避免浮点数精度问题
   int64 expire_time = 3;   // 过期时间戳(秒)，交由 API 层格式化或直接返给前端倒计时
+  string status = 4; // 状态： queueing表示排队中
 }
 
 

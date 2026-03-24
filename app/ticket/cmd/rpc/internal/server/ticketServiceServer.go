@@ -35,10 +35,16 @@ func (s *TicketServiceServer) GetSeatList(ctx context.Context, in *rpc.GetSeatLi
 	return l.GetSeatList(in)
 }
 
-// 锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+// 锁定座位，只操作Redis
 func (s *TicketServiceServer) LockSeat(ctx context.Context, in *rpc.LockSeatReq) (*rpc.LockSeatResp, error) {
 	l := logic.NewLockSeatLogic(ctx, s.svcCtx)
 	return l.LockSeat(in)
+}
+
+// 提供完整的锁座操作
+func (s *TicketServiceServer) AcquireSeat(ctx context.Context, in *rpc.LockSeatReq) (*rpc.LockSeatResp, error) {
+	l := logic.NewAcquireSeatLogic(ctx, s.svcCtx)
+	return l.AcquireSeat(in)
 }
 
 // 获取座位信息 (供 Order RPC 内部调用)
@@ -53,7 +59,7 @@ func (s *TicketServiceServer) WarmUpValidSeats(ctx context.Context, in *rpc.Warm
 	return l.WarmUpValidSeats(in)
 }
 
-// 取消锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+// 取消锁定座位，只操作Redis
 func (s *TicketServiceServer) UnlockSeat(ctx context.Context, in *rpc.UnlockSeatReq) (*rpc.UnlockSeatResp, error) {
 	l := logic.NewUnlockSeatLogic(ctx, s.svcCtx)
 	return l.UnlockSeat(in)
@@ -63,6 +69,12 @@ func (s *TicketServiceServer) UnlockSeat(ctx context.Context, in *rpc.UnlockSeat
 func (s *TicketServiceServer) ReleaseSeat(ctx context.Context, in *rpc.ReleaseSeatReq) (*rpc.ReleaseSeatResp, error) {
 	l := logic.NewReleaseSeatLogic(ctx, s.svcCtx)
 	return l.ReleaseSeat(in)
+}
+
+// 兜底释放座位，差别在于Redis段会调用underwriteUnlockSeat
+func (s *TicketServiceServer) UnderwriteReleaseSeat(ctx context.Context, in *rpc.ReleaseSeatReq) (*rpc.ReleaseSeatResp, error) {
+	l := logic.NewUnderwriteReleaseSeatLogic(ctx, s.svcCtx)
+	return l.UnderwriteReleaseSeat(in)
 }
 
 // 获取BitMap信息

@@ -1,6 +1,9 @@
 package config
 
-import "github.com/zeromicro/go-zero/zrpc"
+import (
+	"github.com/zeromicro/go-queue/kq"
+	"github.com/zeromicro/go-zero/zrpc"
+)
 
 type Config struct {
 	zrpc.RpcServerConf
@@ -10,4 +13,7 @@ type Config struct {
 
 	// Ticket RPC Client 配置
 	TicketRpc zrpc.RpcClientConf
+
+	// Kafka配置
+	Kafka kq.KqConf
 }

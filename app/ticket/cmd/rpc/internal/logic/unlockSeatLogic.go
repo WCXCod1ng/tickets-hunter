@@ -45,13 +45,13 @@ func (l *UnlockSeatLogic) UnlockSeat(in *rpc.UnlockSeatReq) (*rpc.UnlockSeatResp
 	resp, err := l.svcCtx.UnlockSeatLuaScript.Exec(l.ctx, l.svcCtx.Redis, keys, args...)
 	if err != nil {
 		l.Errorf("执行 UnlockSeatLuaScript 失败: %v", err)
-		return nil, errors2.WithStack(status.Error(codes.Internal, "释放锁定座位失败"))
+		return &rpc.UnlockSeatResp{Success: false}, errors2.WithStack(status.Error(codes.Internal, "释放锁定座位失败"))
 	}
 
 	res, ok := resp.(int64)
 	if !ok {
 		l.Errorf("UnlockSeatLuaScript 返回值类型错误: %T", resp)
-		return nil, errors2.WithStack(status.Error(codes.Internal, "释放锁定座位失败"))
+		return &rpc.UnlockSeatResp{Success: false}, errors2.WithStack(status.Error(codes.Internal, "释放锁定座位失败"))
 	}
 
 	if res == 1 {

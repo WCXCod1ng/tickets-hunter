@@ -2,6 +2,7 @@ package svc
 
 import (
 	"tickets-hunter/app/model/order_main"
+	"tickets-hunter/app/model/ticket_seat"
 	"tickets-hunter/app/order/cmd/orderJob/internal/config"
 	"tickets-hunter/app/ticket/cmd/rpc/ticketservice"
 	"tickets-hunter/common/delay_queue"
@@ -21,17 +22,25 @@ type ServiceContext struct {
 	OrderMainModel order_main.OrderMainModel
 	// Ticket RPC Client
 	TicketRpc ticketservice.TicketService
+	// 座位表
+	TicketSeatModel ticket_seat.TicketSeatModel
+	// 释放座位的Redis
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 
 	rd := redis.MustNewRedis(c.Redis.RedisConf)
 
-	return &ServiceContext{
-		Config:         c,
-		Redis:          rd,
-		DelayQueue:     delay_queue.NewZSetDelayQueue(rd, redis2.OrderDelayQueueKey),
-		OrderMainModel: order_main.NewOrderMainModel(sqlx.NewMysql(c.DB.DataSource)),
-		TicketRpc:      ticketservice.NewTicketService(zrpc.MustNewClient(c.TicketRpc)),
+	conn := sqlx.NewMysql(c.DB.DataSource)
+
+	svcCtx := &ServiceContext{
+		Config:          c,
+		Redis:           rd,
+		DelayQueue:      delay_queue.NewZSetDelayQueue(rd, redis2.OrderDelayQueueKey),
+		OrderMainModel:  order_main.NewOrderMainModel(conn),
+		TicketRpc:       ticketservice.NewTicketService(zrpc.MustNewClient(c.TicketRpc)),
+		TicketSeatModel: ticket_seat.NewTicketSeatModel(conn),
 	}
+
+	return svcCtx
 }

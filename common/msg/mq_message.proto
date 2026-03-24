@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package mq_msg;
+
+option go_package = "./mq_msg";
+
+message MQMessage {
+  string type = 1;
+  int32 version = 2;
+  bytes data = 3;
+}

@@ -1067,16 +1067,18 @@ const file_ticket_proto_rawDesc = "" +
 	"\bevent_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aeventId\x12!\n" +
 	"\asection\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\asection\"+\n" +
 	"\x11GetSeatBitMapResp\x12\x16\n" +
-	"\x06bitmap\x18\x01 \x01(\tR\x06bitmap2\x93\x04\n" +
+	"\x06bitmap\x18\x01 \x01(\tR\x06bitmap2\x97\x05\n" +
 	"\rTicketService\x12A\n" +
 	"\fGetEventList\x12\x17.ticket.GetEventListReq\x1a\x18.ticket.GetEventListResp\x12>\n" +
 	"\vGetSeatList\x12\x16.ticket.GetSeatListReq\x1a\x17.ticket.GetSeatListResp\x125\n" +
-	"\bLockSeat\x12\x13.ticket.LockSeatReq\x1a\x14.ticket.LockSeatResp\x127\n" +
+	"\bLockSeat\x12\x13.ticket.LockSeatReq\x1a\x14.ticket.LockSeatResp\x128\n" +
+	"\vAcquireSeat\x12\x13.ticket.LockSeatReq\x1a\x14.ticket.LockSeatResp\x127\n" +
 	"\vGetSeatInfo\x12\x16.ticket.GetSeatInfoReq\x1a\x10.ticket.SeatInfo\x12M\n" +
 	"\x10WarmUpValidSeats\x12\x1b.ticket.WarmUpValidSeatsReq\x1a\x1c.ticket.WarmUpValidSeatsResp\x12;\n" +
 	"\n" +
 	"UnlockSeat\x12\x15.ticket.UnlockSeatReq\x1a\x16.ticket.UnlockSeatResp\x12>\n" +
-	"\vReleaseSeat\x12\x16.ticket.ReleaseSeatReq\x1a\x17.ticket.ReleaseSeatResp\x12C\n" +
+	"\vReleaseSeat\x12\x16.ticket.ReleaseSeatReq\x1a\x17.ticket.ReleaseSeatResp\x12H\n" +
+	"\x15UnderwriteReleaseSeat\x12\x16.ticket.ReleaseSeatReq\x1a\x17.ticket.ReleaseSeatResp\x12C\n" +
 	"\rGetSeatBitMap\x12\x18.ticket.GetSeatBitMapReq\x1a\x18.ticket.GetEventListRespB\fZ\n" +
 	"ticket/rpcb\x06proto3"
 
@@ -1118,21 +1120,25 @@ var file_ticket_proto_depIdxs = []int32{
 	2,  // 2: ticket.TicketService.GetEventList:input_type -> ticket.GetEventListReq
 	4,  // 3: ticket.TicketService.GetSeatList:input_type -> ticket.GetSeatListReq
 	6,  // 4: ticket.TicketService.LockSeat:input_type -> ticket.LockSeatReq
-	8,  // 5: ticket.TicketService.GetSeatInfo:input_type -> ticket.GetSeatInfoReq
-	9,  // 6: ticket.TicketService.WarmUpValidSeats:input_type -> ticket.WarmUpValidSeatsReq
-	11, // 7: ticket.TicketService.UnlockSeat:input_type -> ticket.UnlockSeatReq
-	13, // 8: ticket.TicketService.ReleaseSeat:input_type -> ticket.ReleaseSeatReq
-	15, // 9: ticket.TicketService.GetSeatBitMap:input_type -> ticket.GetSeatBitMapReq
-	3,  // 10: ticket.TicketService.GetEventList:output_type -> ticket.GetEventListResp
-	5,  // 11: ticket.TicketService.GetSeatList:output_type -> ticket.GetSeatListResp
-	7,  // 12: ticket.TicketService.LockSeat:output_type -> ticket.LockSeatResp
-	1,  // 13: ticket.TicketService.GetSeatInfo:output_type -> ticket.SeatInfo
-	10, // 14: ticket.TicketService.WarmUpValidSeats:output_type -> ticket.WarmUpValidSeatsResp
-	12, // 15: ticket.TicketService.UnlockSeat:output_type -> ticket.UnlockSeatResp
-	14, // 16: ticket.TicketService.ReleaseSeat:output_type -> ticket.ReleaseSeatResp
-	3,  // 17: ticket.TicketService.GetSeatBitMap:output_type -> ticket.GetEventListResp
-	10, // [10:18] is the sub-list for method output_type
-	2,  // [2:10] is the sub-list for method input_type
+	6,  // 5: ticket.TicketService.AcquireSeat:input_type -> ticket.LockSeatReq
+	8,  // 6: ticket.TicketService.GetSeatInfo:input_type -> ticket.GetSeatInfoReq
+	9,  // 7: ticket.TicketService.WarmUpValidSeats:input_type -> ticket.WarmUpValidSeatsReq
+	11, // 8: ticket.TicketService.UnlockSeat:input_type -> ticket.UnlockSeatReq
+	13, // 9: ticket.TicketService.ReleaseSeat:input_type -> ticket.ReleaseSeatReq
+	13, // 10: ticket.TicketService.UnderwriteReleaseSeat:input_type -> ticket.ReleaseSeatReq
+	15, // 11: ticket.TicketService.GetSeatBitMap:input_type -> ticket.GetSeatBitMapReq
+	3,  // 12: ticket.TicketService.GetEventList:output_type -> ticket.GetEventListResp
+	5,  // 13: ticket.TicketService.GetSeatList:output_type -> ticket.GetSeatListResp
+	7,  // 14: ticket.TicketService.LockSeat:output_type -> ticket.LockSeatResp
+	7,  // 15: ticket.TicketService.AcquireSeat:output_type -> ticket.LockSeatResp
+	1,  // 16: ticket.TicketService.GetSeatInfo:output_type -> ticket.SeatInfo
+	10, // 17: ticket.TicketService.WarmUpValidSeats:output_type -> ticket.WarmUpValidSeatsResp
+	12, // 18: ticket.TicketService.UnlockSeat:output_type -> ticket.UnlockSeatResp
+	14, // 19: ticket.TicketService.ReleaseSeat:output_type -> ticket.ReleaseSeatResp
+	14, // 20: ticket.TicketService.UnderwriteReleaseSeat:output_type -> ticket.ReleaseSeatResp
+	3,  // 21: ticket.TicketService.GetSeatBitMap:output_type -> ticket.GetEventListResp
+	12, // [12:22] is the sub-list for method output_type
+	2,  // [2:12] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
 	2,  // [2:2] is the sub-list for extension extendee
 	0,  // [0:2] is the sub-list for field type_name

@@ -8,6 +8,7 @@ import (
 	"tickets-hunter/common/delay_queue"
 	"tickets-hunter/common/idgen"
 	"tickets-hunter/common/luaexec"
+	"tickets-hunter/common/mq"
 	redis2 "tickets-hunter/common/redis"
 
 	"github.com/bwmarrin/snowflake"
@@ -36,6 +37,8 @@ type ServiceContext struct {
 	TicketSeatModel ticket_seat.TicketSeatModel
 	// 出座位的Lua脚本
 	IssueSeatLuaScript *luaexec.LuaScript
+	// MQ生产者
+	MQProducer *mq.Producer
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -57,5 +60,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		ReleaseSeatLuaScript: luaexec.NewLuaScript(releaseSeatScriptContent),
 		TicketSeatModel:      ticket_seat.NewTicketSeatModel(mysqlConn),
 		IssueSeatLuaScript:   luaexec.NewLuaScript(issueSeatScriptContent),
+		MQProducer:           mq.NewProducer(mq.NewGoZeroKafkaPusher(c.KqPusherConf.Brokers, c.KqPusherConf.Topic)),
 	}
 }

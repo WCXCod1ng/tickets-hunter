@@ -25,6 +25,10 @@ func main() {
 
 	registry.Register(logic.NewProcessDelayTaskJob(svcCtx))
 
+	registry.Register(logic.NewOrderCreateConsumerJob(svcCtx))
+
+	registry.Register(logic.NewOverdueOrderProcessingJob(svcCtx))
+
 	ctx := context.Background()
 	// 启动任务调度器
 	registry.BlockRunAll(ctx)

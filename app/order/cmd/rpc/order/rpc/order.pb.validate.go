@@ -196,6 +196,8 @@ func (m *CreateOrderResp) validate(all bool) error {
 
 	// no validation rules for ExpireTime
 
+	// no validation rules for Status
+
 	if len(errors) > 0 {
 		return CreateOrderRespMultiError(errors)
 	}

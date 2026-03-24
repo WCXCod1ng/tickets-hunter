@@ -89,6 +89,7 @@ type CreateOrderResp struct {
 	OrderSn       string                 `protobuf:"bytes,1,opt,name=order_sn,json=orderSn,proto3" json:"order_sn,omitempty"`           // 生成的唯一订单号
 	Amount        int64                  `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`                           // 订单金额，以分为单位，避免浮点数精度问题
 	ExpireTime    int64                  `protobuf:"varint,3,opt,name=expire_time,json=expireTime,proto3" json:"expire_time,omitempty"` // 过期时间戳(秒)，交由 API 层格式化或直接返给前端倒计时
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`                            // 状态： queueing表示排队中
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -142,6 +143,13 @@ func (x *CreateOrderResp) GetExpireTime() int64 {
 		return x.ExpireTime
 	}
 	return 0
+}
+
+func (x *CreateOrderResp) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
 }
 
 // 1.2 查询订单详情请求
@@ -444,12 +452,13 @@ const file_order_proto_rawDesc = "" +
 	"\x0eCreateOrderReq\x12 \n" +
 	"\auser_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12\"\n" +
 	"\bevent_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aeventId\x12 \n" +
-	"\aseat_id\x18\x03 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06seatId\"e\n" +
+	"\aseat_id\x18\x03 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06seatId\"}\n" +
 	"\x0fCreateOrderResp\x12\x19\n" +
 	"\border_sn\x18\x01 \x01(\tR\aorderSn\x12\x16\n" +
 	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12\x1f\n" +
 	"\vexpire_time\x18\x03 \x01(\x03R\n" +
-	"expireTime\"Y\n" +
+	"expireTime\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\"Y\n" +
 	"\x11GetOrderDetailReq\x12\"\n" +
 	"\border_sn\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\aorderSn\x12 \n" +
 	"\auser_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\"\xd5\x01\n" +

@@ -37,16 +37,20 @@ type (
 		GetEventList(ctx context.Context, in *GetEventListReq, opts ...grpc.CallOption) (*GetEventListResp, error)
 		// 获取指定场次的座位图及状态 (供 API 层调用)
 		GetSeatList(ctx context.Context, in *GetSeatListReq, opts ...grpc.CallOption) (*GetSeatListResp, error)
-		// 锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+		// 锁定座位，只操作Redis
 		LockSeat(ctx context.Context, in *LockSeatReq, opts ...grpc.CallOption) (*LockSeatResp, error)
+		// 提供完整的锁座操作
+		AcquireSeat(ctx context.Context, in *LockSeatReq, opts ...grpc.CallOption) (*LockSeatResp, error)
 		// 获取座位信息 (供 Order RPC 内部调用)
 		GetSeatInfo(ctx context.Context, in *GetSeatInfoReq, opts ...grpc.CallOption) (*SeatInfo, error)
 		// 有效座位集合缓存预热 (内部隐藏接口，实际场景中可能由定时任务调用)
 		WarmUpValidSeats(ctx context.Context, in *WarmUpValidSeatsReq, opts ...grpc.CallOption) (*WarmUpValidSeatsResp, error)
-		// 取消锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+		// 取消锁定座位，只操作Redis
 		UnlockSeat(ctx context.Context, in *UnlockSeatReq, opts ...grpc.CallOption) (*UnlockSeatResp, error)
 		// 释放座位，供订单支付超时或用户取消订单时调用，更新MySQL的座位状态为可选，并删除Redis中的锁定状态
 		ReleaseSeat(ctx context.Context, in *ReleaseSeatReq, opts ...grpc.CallOption) (*ReleaseSeatResp, error)
+		// 兜底释放座位，差别在于Redis段会调用underwriteUnlockSeat
+		UnderwriteReleaseSeat(ctx context.Context, in *ReleaseSeatReq, opts ...grpc.CallOption) (*ReleaseSeatResp, error)
 		// 获取BitMap信息
 		GetSeatBitMap(ctx context.Context, in *GetSeatBitMapReq, opts ...grpc.CallOption) (*GetEventListResp, error)
 	}
@@ -74,10 +78,16 @@ func (m *defaultTicketService) GetSeatList(ctx context.Context, in *GetSeatListR
 	return client.GetSeatList(ctx, in, opts...)
 }
 
-// 锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+// 锁定座位，只操作Redis
 func (m *defaultTicketService) LockSeat(ctx context.Context, in *LockSeatReq, opts ...grpc.CallOption) (*LockSeatResp, error) {
 	client := rpc.NewTicketServiceClient(m.cli.Conn())
 	return client.LockSeat(ctx, in, opts...)
+}
+
+// 提供完整的锁座操作
+func (m *defaultTicketService) AcquireSeat(ctx context.Context, in *LockSeatReq, opts ...grpc.CallOption) (*LockSeatResp, error) {
+	client := rpc.NewTicketServiceClient(m.cli.Conn())
+	return client.AcquireSeat(ctx, in, opts...)
 }
 
 // 获取座位信息 (供 Order RPC 内部调用)
@@ -92,7 +102,7 @@ func (m *defaultTicketService) WarmUpValidSeats(ctx context.Context, in *WarmUpV
 	return client.WarmUpValidSeats(ctx, in, opts...)
 }
 
-// 取消锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+// 取消锁定座位，只操作Redis
 func (m *defaultTicketService) UnlockSeat(ctx context.Context, in *UnlockSeatReq, opts ...grpc.CallOption) (*UnlockSeatResp, error) {
 	client := rpc.NewTicketServiceClient(m.cli.Conn())
 	return client.UnlockSeat(ctx, in, opts...)
@@ -102,6 +112,12 @@ func (m *defaultTicketService) UnlockSeat(ctx context.Context, in *UnlockSeatReq
 func (m *defaultTicketService) ReleaseSeat(ctx context.Context, in *ReleaseSeatReq, opts ...grpc.CallOption) (*ReleaseSeatResp, error) {
 	client := rpc.NewTicketServiceClient(m.cli.Conn())
 	return client.ReleaseSeat(ctx, in, opts...)
+}
+
+// 兜底释放座位，差别在于Redis段会调用underwriteUnlockSeat
+func (m *defaultTicketService) UnderwriteReleaseSeat(ctx context.Context, in *ReleaseSeatReq, opts ...grpc.CallOption) (*ReleaseSeatResp, error) {
+	client := rpc.NewTicketServiceClient(m.cli.Conn())
+	return client.UnderwriteReleaseSeat(ctx, in, opts...)
 }
 
 // 获取BitMap信息

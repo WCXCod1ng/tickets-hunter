@@ -20,4 +20,9 @@ type Config struct {
 	DB struct {
 		DataSource string `json:"DataSource" binding:"required"`
 	}
+
+	KqPusherConf struct {
+		Brokers []string `json:"Brokers" binding:"required"`
+		Topic   string   `json:"Topic" binding:"required"`
+	}
 }

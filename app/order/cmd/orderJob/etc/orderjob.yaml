@@ -24,6 +24,16 @@ Redis:
   Pass: ""          # 没密码就留空
   Key: ticket           # key 前缀
 
+# go-zero 原生的 Kafka 消费者配置 (kq)
+Kafka:
+  Name: "kqConsumer"
+  Brokers:
+    - 127.0.0.1:9092 # 填你 docker-compose 里的 Kafka 地址
+  Group: order-create-group
+  Topic: order-create-topic
+  Offset: first
+  Consumers: 4            # 并发消费的 Goroutine 数量，提高削峰处理能力
+
 # 日志配置
 Log:
   ServiceName: orderjob

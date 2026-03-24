@@ -2,10 +2,12 @@ package logic
 
 import (
 	"context"
-	"tickets-hunter/app/ticket/cmd/rpc/internal/svc"
-	"tickets-hunter/app/ticket/cmd/rpc/ticket/rpc"
+	"tickets-hunter/app/model/ticket_seat"
 	"tickets-hunter/app/ticket/define"
 	redis2 "tickets-hunter/common/redis"
+
+	"tickets-hunter/app/ticket/cmd/rpc/internal/svc"
+	"tickets-hunter/app/ticket/cmd/rpc/ticket/rpc"
 
 	errors2 "github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -13,22 +15,22 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type LockSeatLogic struct {
+type AcquireSeatLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
 }
 
-func NewLockSeatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LockSeatLogic {
-	return &LockSeatLogic{
+func NewAcquireSeatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AcquireSeatLogic {
+	return &AcquireSeatLogic{
 		ctx:    ctx,
 		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
 	}
 }
 
-// 锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
-func (l *LockSeatLogic) LockSeat(in *rpc.LockSeatReq) (*rpc.LockSeatResp, error) {
+// 提供完整的锁座操作
+func (l *AcquireSeatLogic) AcquireSeat(in *rpc.LockSeatReq) (*rpc.LockSeatResp, error) {
 	//success, err := l.svcCtx.TicketSeatModel.UpdateStatusByIdAndOldStatus(l.ctx, in.SeatId, ticket_seat.SeatStatusAvailable, ticket_seat.SeatStatusLocked)
 	//if err != nil {
 	//	return nil, errors2.WithStack(status.Error(codes.Internal, err.Error()))
@@ -67,22 +69,19 @@ func (l *LockSeatLogic) LockSeat(in *rpc.LockSeatReq) (*rpc.LockSeatResp, error)
 
 	switch res {
 	case 0:
-		//success, err := l.svcCtx.TicketSeatModel.UpdateStatusByIdAndOldStatus(l.ctx, in.SeatId, ticket_seat.SeatStatusAvailable, ticket_seat.SeatStatusLocked)
-		//if err != nil || !success {
-		//	l.Logger.Errorf("failed to update seat status in database for seat %d: %v", in.SeatId, err)
-		//	// 尝试回滚 Redis 锁，防止锁定失效导致的座位被占用问题
-		//	keys := []string{lockKey}
-		//	args := []any{orderSn}
-		//	resp, rollbackErr := l.svcCtx.UnlockSeatLuaScript.Exec(l.ctx, l.svcCtx.Redis, keys, args...)
-		//	if r, ok := resp.(int64); !ok || r != 1 || rollbackErr != nil {
-		//		// 回滚Redis失败了也不再重试了，此时数据库没有锁定座位，但Redis里可能还残留一个锁，这个锁会在过期时间到了之后自动失效，虽然会有短暂的锁定失效风险，但总比数据库和Redis都失效了更安全一些了
-		//		l.Logger.Errorf("failed to rollback redis lock for seat %d: (%v, %v)", in.SeatId, resp, rollbackErr)
-		//	}
-		//	return nil, errors2.WithStack(status.Error(codes.Internal, "failed to lock seat"))
-		//}
-
-		// 优化，不再同步写入MySQL，而是引入Kafka异步削峰。
-		// 所以这里直接返回成功，将来CreateOrderRpc会调用它，并且成功后直接投递消息给Kafka
+		success, err := l.svcCtx.TicketSeatModel.UpdateStatusByIdAndOldStatus(l.ctx, in.SeatId, ticket_seat.SeatStatusAvailable, ticket_seat.SeatStatusLocked)
+		if err != nil || !success {
+			l.Logger.Errorf("failed to update seat status in database for seat %d: %v", in.SeatId, err)
+			// 尝试回滚 Redis 锁，防止锁定失效导致的座位被占用问题
+			keys := []string{lockKey}
+			args := []any{orderSn}
+			resp, rollbackErr := l.svcCtx.UnlockSeatLuaScript.Exec(l.ctx, l.svcCtx.Redis, keys, args...)
+			if r, ok := resp.(int64); !ok || r != 1 || rollbackErr != nil {
+				// 回滚Redis失败了也不再重试了，此时数据库没有锁定座位，但Redis里可能还残留一个锁，这个锁会在过期时间到了之后自动失效，虽然会有短暂的锁定失效风险，但总比数据库和Redis都失效了更安全一些了
+				l.Logger.Errorf("failed to rollback redis lock for seat %d: (%v, %v)", in.SeatId, resp, rollbackErr)
+			}
+			return nil, errors2.WithStack(status.Error(codes.Internal, "failed to lock seat"))
+		}
 
 		l.Logger.Debugf("seat %d locked successfully for order %d in Redis", in.SeatId, orderSn)
 		return &rpc.LockSeatResp{Success: true}, nil
@@ -97,6 +96,6 @@ func (l *LockSeatLogic) LockSeat(in *rpc.LockSeatReq) (*rpc.LockSeatResp, error)
 	default:
 		// 其他未知错误
 		l.Logger.Errorf("unexpected result from lock seat Lua script: %d", res)
-		return &rpc.LockSeatResp{Success: false}, errors2.WithStack(status.Error(codes.Internal, "unexpected result from lock seat Lua script"))
+		return nil, errors2.WithStack(status.Error(codes.Internal, "unexpected result from lock seat Lua script"))
 	}
 }

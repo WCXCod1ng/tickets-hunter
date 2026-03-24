@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
@@ -28,6 +29,8 @@ type (
 		UpdateStatusByOrderSnAndStatusWithTx(ctx context.Context, tx *sql.Tx, orderSn string, oldStatus int64, newStatus int64) (bool, error)
 
 		UpdateStatusByOrderSnAndNotStatusWithTx(ctx context.Context, tx *sql.Tx, orderSn string, notStatus int64, newStatus int64) (bool, error)
+
+		FindByStatusAndExpireTimeLessThan(ctx context.Context, orderStatus int64, expireTime time.Time) ([]*OrderMain, error)
 	}
 
 	customOrderMainModel struct {
@@ -87,6 +90,16 @@ func (m *customOrderMainModel) UpdateStatusByOrderSnAndNotStatusWithTx(ctx conte
 		return false, err
 	}
 	return rowsAffected > 0, nil
+}
+
+func (m *customOrderMainModel) FindByStatusAndExpireTimeLessThan(ctx context.Context, orderStatus int64, now time.Time) ([]*OrderMain, error) {
+	query := fmt.Sprintf("select `order_sn`, `seat_id`, `seat_index`, `section`, `event_id` from %s where `status` = ? and `expire_time` <= DATE_SUB(?, INTERVAL 5 MINUTE) limit 500", m.table)
+	var res []*OrderMain
+	err := m.conn.QueryRowsPartialCtx(ctx, &res, query, orderStatus, now)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 // NewOrderMainModel returns a usercenter for the database table.

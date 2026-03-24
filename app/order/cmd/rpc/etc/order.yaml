@@ -32,6 +32,11 @@ Redis:
 
 Timeout: 60000
 
+KqPusherConf:
+  Brokers:
+    - 127.0.0.1:9092
+  Topic: order-create-topic
+
 Log:
   ServiceName: order-rpc
   Level: debug

@@ -17,5 +17,10 @@ func SeatLockRedisKey(seatId int64) string {
 	return fmt.Sprintf("ticket:seat:%d:lock", seatId)
 }
 
+// 存放静态座位信息（优化createOrder查MySQL的过程），每个座位的信息都是一个Hash结构
+func SeatStaticInfoRedisKey(seatId int64) string {
+	return fmt.Sprintf("ticket:seat:static_info:{%d}", seatId)
+}
+
 // 订单延迟队列的 Redis Key
 const OrderDelayQueueKey = "order:delay_queue"

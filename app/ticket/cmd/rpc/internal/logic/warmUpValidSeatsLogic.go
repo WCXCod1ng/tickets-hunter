@@ -55,15 +55,50 @@ func (l *WarmUpValidSeatsLogic) WarmUpValidSeats(in *rpc.WarmUpValidSeatsReq) (*
 		return nil, status.Error(codes.NotFound, "没有有效座位")
 	}
 
-	// 2. 批量将有效座位信息写入 Redis 缓存
+	// 2. 将静态座位信息存放到Redis中（一个Hash）
+	{
+		batchSize := 1000
+		for i := 0; i < len(seats); i += batchSize {
+			end := i + batchSize
+			if end > len(seats) {
+				end = len(seats)
+			}
+			if err := l.svcCtx.Redis.PipelinedCtx(l.ctx, func(pipe redis.Pipeliner) error {
+				for _, seat := range seats[i:end] {
+					key := redis2.SeatStaticInfoRedisKey(seat.Id) // 可以优化为Protobuf序列化
+					seatMap := map[string]interface{}{
+						"event_id":   seat.EventId,
+						"seat_type":  seat.SeatType,
+						"section":    seat.Section,
+						"seat_index": seat.SeatIndex,
+						"row_no":     seat.RowNo,
+						"seat_no":    seat.SeatNo,
+						"price":      seat.Price,
+					}
+					// 构建Hash的field-value map
+					err := pipe.HMSet(l.ctx, key, seatMap).Err()
+					if err != nil {
+						return err
+					}
 
-	// 3. 按 Section 分组
-	sectionMap := make(map[string][]int64)
-	for _, seat := range seats {
-		sectionMap[seat.Section] = append(sectionMap[seat.Section], seat.SeatIndex)
+					expireAt := ticketEvent.SaleEndTime.Add(3 * time.Hour)
+					if err := l.svcCtx.Redis.ExpireatCtx(l.ctx, key, expireAt.Unix()); err != nil {
+						return err
+					}
+				}
+
+				return nil
+			}); err != nil {
+				l.Logger.Error(err)
+			}
+		}
 	}
 
-	// 4. 对每个 Section 写入 Bitmap
+	// 3. 按 Section 分组，并对每个Section，都写入到一个Bitmap中
+	sectionMap := make(map[string][]*ticket_seat.TicketSeat)
+	for _, seat := range seats {
+		sectionMap[seat.Section] = append(sectionMap[seat.Section], seat)
+	}
 	for section, seatIndexes := range sectionMap {
 		redisKey := redis2.SeatBitMapRedisKey(in.EventId, section)
 
@@ -80,8 +115,14 @@ func (l *WarmUpValidSeatsLogic) WarmUpValidSeats(in *rpc.WarmUpValidSeatsReq) (*
 				if end > len(seatIndexes) {
 					end = len(seatIndexes)
 				}
-				for _, seatIndex := range seatIndexes[i:end] {
-					pipe.SetBit(l.ctx, redisKey, seatIndex, 0) // BitMap中：0-可售；1-不可售（卖出/锁定）
+				for _, seat := range seatIndexes[i:end] {
+					var bitValue int
+					if seat.Status == ticket_seat.SeatStatusAvailable {
+						bitValue = 0
+					} else {
+						bitValue = 1
+					}
+					pipe.SetBit(l.ctx, redisKey, seat.SeatIndex, bitValue) // BitMap中：0-可售；1-不可售（卖出/锁定）
 				}
 				totalCached += end - i
 			}

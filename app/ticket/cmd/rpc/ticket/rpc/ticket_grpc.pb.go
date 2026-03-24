@@ -20,14 +20,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TicketService_GetEventList_FullMethodName     = "/ticket.TicketService/GetEventList"
-	TicketService_GetSeatList_FullMethodName      = "/ticket.TicketService/GetSeatList"
-	TicketService_LockSeat_FullMethodName         = "/ticket.TicketService/LockSeat"
-	TicketService_GetSeatInfo_FullMethodName      = "/ticket.TicketService/GetSeatInfo"
-	TicketService_WarmUpValidSeats_FullMethodName = "/ticket.TicketService/WarmUpValidSeats"
-	TicketService_UnlockSeat_FullMethodName       = "/ticket.TicketService/UnlockSeat"
-	TicketService_ReleaseSeat_FullMethodName      = "/ticket.TicketService/ReleaseSeat"
-	TicketService_GetSeatBitMap_FullMethodName    = "/ticket.TicketService/GetSeatBitMap"
+	TicketService_GetEventList_FullMethodName          = "/ticket.TicketService/GetEventList"
+	TicketService_GetSeatList_FullMethodName           = "/ticket.TicketService/GetSeatList"
+	TicketService_LockSeat_FullMethodName              = "/ticket.TicketService/LockSeat"
+	TicketService_AcquireSeat_FullMethodName           = "/ticket.TicketService/AcquireSeat"
+	TicketService_GetSeatInfo_FullMethodName           = "/ticket.TicketService/GetSeatInfo"
+	TicketService_WarmUpValidSeats_FullMethodName      = "/ticket.TicketService/WarmUpValidSeats"
+	TicketService_UnlockSeat_FullMethodName            = "/ticket.TicketService/UnlockSeat"
+	TicketService_ReleaseSeat_FullMethodName           = "/ticket.TicketService/ReleaseSeat"
+	TicketService_UnderwriteReleaseSeat_FullMethodName = "/ticket.TicketService/UnderwriteReleaseSeat"
+	TicketService_GetSeatBitMap_FullMethodName         = "/ticket.TicketService/GetSeatBitMap"
 )
 
 // TicketServiceClient is the client API for TicketService service.
@@ -38,16 +40,20 @@ type TicketServiceClient interface {
 	GetEventList(ctx context.Context, in *GetEventListReq, opts ...grpc.CallOption) (*GetEventListResp, error)
 	// 获取指定场次的座位图及状态 (供 API 层调用)
 	GetSeatList(ctx context.Context, in *GetSeatListReq, opts ...grpc.CallOption) (*GetSeatListResp, error)
-	// 锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+	// 锁定座位，只操作Redis
 	LockSeat(ctx context.Context, in *LockSeatReq, opts ...grpc.CallOption) (*LockSeatResp, error)
+	// 提供完整的锁座操作
+	AcquireSeat(ctx context.Context, in *LockSeatReq, opts ...grpc.CallOption) (*LockSeatResp, error)
 	// 获取座位信息 (供 Order RPC 内部调用)
 	GetSeatInfo(ctx context.Context, in *GetSeatInfoReq, opts ...grpc.CallOption) (*SeatInfo, error)
 	// 有效座位集合缓存预热 (内部隐藏接口，实际场景中可能由定时任务调用)
 	WarmUpValidSeats(ctx context.Context, in *WarmUpValidSeatsReq, opts ...grpc.CallOption) (*WarmUpValidSeatsResp, error)
-	// 取消锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+	// 取消锁定座位，只操作Redis
 	UnlockSeat(ctx context.Context, in *UnlockSeatReq, opts ...grpc.CallOption) (*UnlockSeatResp, error)
 	// 释放座位，供订单支付超时或用户取消订单时调用，更新MySQL的座位状态为可选，并删除Redis中的锁定状态
 	ReleaseSeat(ctx context.Context, in *ReleaseSeatReq, opts ...grpc.CallOption) (*ReleaseSeatResp, error)
+	// 兜底释放座位，差别在于Redis段会调用underwriteUnlockSeat
+	UnderwriteReleaseSeat(ctx context.Context, in *ReleaseSeatReq, opts ...grpc.CallOption) (*ReleaseSeatResp, error)
 	// 获取BitMap信息
 	GetSeatBitMap(ctx context.Context, in *GetSeatBitMapReq, opts ...grpc.CallOption) (*GetEventListResp, error)
 }
@@ -84,6 +90,16 @@ func (c *ticketServiceClient) LockSeat(ctx context.Context, in *LockSeatReq, opt
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LockSeatResp)
 	err := c.cc.Invoke(ctx, TicketService_LockSeat_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ticketServiceClient) AcquireSeat(ctx context.Context, in *LockSeatReq, opts ...grpc.CallOption) (*LockSeatResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LockSeatResp)
+	err := c.cc.Invoke(ctx, TicketService_AcquireSeat_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -130,6 +146,16 @@ func (c *ticketServiceClient) ReleaseSeat(ctx context.Context, in *ReleaseSeatRe
 	return out, nil
 }
 
+func (c *ticketServiceClient) UnderwriteReleaseSeat(ctx context.Context, in *ReleaseSeatReq, opts ...grpc.CallOption) (*ReleaseSeatResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReleaseSeatResp)
+	err := c.cc.Invoke(ctx, TicketService_UnderwriteReleaseSeat_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *ticketServiceClient) GetSeatBitMap(ctx context.Context, in *GetSeatBitMapReq, opts ...grpc.CallOption) (*GetEventListResp, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetEventListResp)
@@ -148,16 +174,20 @@ type TicketServiceServer interface {
 	GetEventList(context.Context, *GetEventListReq) (*GetEventListResp, error)
 	// 获取指定场次的座位图及状态 (供 API 层调用)
 	GetSeatList(context.Context, *GetSeatListReq) (*GetSeatListResp, error)
-	// 锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+	// 锁定座位，只操作Redis
 	LockSeat(context.Context, *LockSeatReq) (*LockSeatResp, error)
+	// 提供完整的锁座操作
+	AcquireSeat(context.Context, *LockSeatReq) (*LockSeatResp, error)
 	// 获取座位信息 (供 Order RPC 内部调用)
 	GetSeatInfo(context.Context, *GetSeatInfoReq) (*SeatInfo, error)
 	// 有效座位集合缓存预热 (内部隐藏接口，实际场景中可能由定时任务调用)
 	WarmUpValidSeats(context.Context, *WarmUpValidSeatsReq) (*WarmUpValidSeatsResp, error)
-	// 取消锁定座位 (内部隐藏接口，不暴露给前端，仅供 Order RPC 调用)
+	// 取消锁定座位，只操作Redis
 	UnlockSeat(context.Context, *UnlockSeatReq) (*UnlockSeatResp, error)
 	// 释放座位，供订单支付超时或用户取消订单时调用，更新MySQL的座位状态为可选，并删除Redis中的锁定状态
 	ReleaseSeat(context.Context, *ReleaseSeatReq) (*ReleaseSeatResp, error)
+	// 兜底释放座位，差别在于Redis段会调用underwriteUnlockSeat
+	UnderwriteReleaseSeat(context.Context, *ReleaseSeatReq) (*ReleaseSeatResp, error)
 	// 获取BitMap信息
 	GetSeatBitMap(context.Context, *GetSeatBitMapReq) (*GetEventListResp, error)
 	mustEmbedUnimplementedTicketServiceServer()
@@ -179,6 +209,9 @@ func (UnimplementedTicketServiceServer) GetSeatList(context.Context, *GetSeatLis
 func (UnimplementedTicketServiceServer) LockSeat(context.Context, *LockSeatReq) (*LockSeatResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method LockSeat not implemented")
 }
+func (UnimplementedTicketServiceServer) AcquireSeat(context.Context, *LockSeatReq) (*LockSeatResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method AcquireSeat not implemented")
+}
 func (UnimplementedTicketServiceServer) GetSeatInfo(context.Context, *GetSeatInfoReq) (*SeatInfo, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSeatInfo not implemented")
 }
@@ -190,6 +223,9 @@ func (UnimplementedTicketServiceServer) UnlockSeat(context.Context, *UnlockSeatR
 }
 func (UnimplementedTicketServiceServer) ReleaseSeat(context.Context, *ReleaseSeatReq) (*ReleaseSeatResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method ReleaseSeat not implemented")
+}
+func (UnimplementedTicketServiceServer) UnderwriteReleaseSeat(context.Context, *ReleaseSeatReq) (*ReleaseSeatResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method UnderwriteReleaseSeat not implemented")
 }
 func (UnimplementedTicketServiceServer) GetSeatBitMap(context.Context, *GetSeatBitMapReq) (*GetEventListResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSeatBitMap not implemented")
@@ -269,6 +305,24 @@ func _TicketService_LockSeat_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TicketService_AcquireSeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LockSeatReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TicketServiceServer).AcquireSeat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TicketService_AcquireSeat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TicketServiceServer).AcquireSeat(ctx, req.(*LockSeatReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TicketService_GetSeatInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetSeatInfoReq)
 	if err := dec(in); err != nil {
@@ -341,6 +395,24 @@ func _TicketService_ReleaseSeat_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TicketService_UnderwriteReleaseSeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReleaseSeatReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TicketServiceServer).UnderwriteReleaseSeat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TicketService_UnderwriteReleaseSeat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TicketServiceServer).UnderwriteReleaseSeat(ctx, req.(*ReleaseSeatReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TicketService_GetSeatBitMap_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetSeatBitMapReq)
 	if err := dec(in); err != nil {
@@ -379,6 +451,10 @@ var TicketService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TicketService_LockSeat_Handler,
 		},
 		{
+			MethodName: "AcquireSeat",
+			Handler:    _TicketService_AcquireSeat_Handler,
+		},
+		{
 			MethodName: "GetSeatInfo",
 			Handler:    _TicketService_GetSeatInfo_Handler,
 		},
@@ -393,6 +469,10 @@ var TicketService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReleaseSeat",
 			Handler:    _TicketService_ReleaseSeat_Handler,
+		},
+		{
+			MethodName: "UnderwriteReleaseSeat",
+			Handler:    _TicketService_UnderwriteReleaseSeat_Handler,
 		},
 		{
 			MethodName: "GetSeatBitMap",
