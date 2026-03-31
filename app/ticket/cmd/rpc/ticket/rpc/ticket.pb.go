@@ -956,7 +956,7 @@ func (x *GetSeatBitMapReq) GetSection() string {
 
 type GetSeatBitMapResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Bitmap        string                 `protobuf:"bytes,1,opt,name=bitmap,proto3" json:"bitmap,omitempty"` // bitmap信息
+	Bitmap        []byte                 `protobuf:"bytes,1,opt,name=bitmap,proto3" json:"bitmap,omitempty"` // bitmap信息
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -991,11 +991,11 @@ func (*GetSeatBitMapResp) Descriptor() ([]byte, []int) {
 	return file_ticket_proto_rawDescGZIP(), []int{16}
 }
 
-func (x *GetSeatBitMapResp) GetBitmap() string {
+func (x *GetSeatBitMapResp) GetBitmap() []byte {
 	if x != nil {
 		return x.Bitmap
 	}
-	return ""
+	return nil
 }
 
 var File_ticket_proto protoreflect.FileDescriptor
@@ -1067,7 +1067,7 @@ const file_ticket_proto_rawDesc = "" +
 	"\bevent_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aeventId\x12!\n" +
 	"\asection\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\asection\"+\n" +
 	"\x11GetSeatBitMapResp\x12\x16\n" +
-	"\x06bitmap\x18\x01 \x01(\tR\x06bitmap2\x97\x05\n" +
+	"\x06bitmap\x18\x01 \x01(\fR\x06bitmap2\x98\x05\n" +
 	"\rTicketService\x12A\n" +
 	"\fGetEventList\x12\x17.ticket.GetEventListReq\x1a\x18.ticket.GetEventListResp\x12>\n" +
 	"\vGetSeatList\x12\x16.ticket.GetSeatListReq\x1a\x17.ticket.GetSeatListResp\x125\n" +
@@ -1078,8 +1078,8 @@ const file_ticket_proto_rawDesc = "" +
 	"\n" +
 	"UnlockSeat\x12\x15.ticket.UnlockSeatReq\x1a\x16.ticket.UnlockSeatResp\x12>\n" +
 	"\vReleaseSeat\x12\x16.ticket.ReleaseSeatReq\x1a\x17.ticket.ReleaseSeatResp\x12H\n" +
-	"\x15UnderwriteReleaseSeat\x12\x16.ticket.ReleaseSeatReq\x1a\x17.ticket.ReleaseSeatResp\x12C\n" +
-	"\rGetSeatBitMap\x12\x18.ticket.GetSeatBitMapReq\x1a\x18.ticket.GetEventListRespB\fZ\n" +
+	"\x15UnderwriteReleaseSeat\x12\x16.ticket.ReleaseSeatReq\x1a\x17.ticket.ReleaseSeatResp\x12D\n" +
+	"\rGetSeatBitMap\x12\x18.ticket.GetSeatBitMapReq\x1a\x19.ticket.GetSeatBitMapRespB\fZ\n" +
 	"ticket/rpcb\x06proto3"
 
 var (
@@ -1136,7 +1136,7 @@ var file_ticket_proto_depIdxs = []int32{
 	12, // 18: ticket.TicketService.UnlockSeat:output_type -> ticket.UnlockSeatResp
 	14, // 19: ticket.TicketService.ReleaseSeat:output_type -> ticket.ReleaseSeatResp
 	14, // 20: ticket.TicketService.UnderwriteReleaseSeat:output_type -> ticket.ReleaseSeatResp
-	3,  // 21: ticket.TicketService.GetSeatBitMap:output_type -> ticket.GetEventListResp
+	16, // 21: ticket.TicketService.GetSeatBitMap:output_type -> ticket.GetSeatBitMapResp
 	12, // [12:22] is the sub-list for method output_type
 	2,  // [2:12] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name

@@ -119,7 +119,7 @@ message GetSeatBitMapReq {
 }
 
 message GetSeatBitMapResp {
-  string bitmap = 1; // bitmap信息
+  bytes bitmap = 1; // bitmap信息
 }
 
 // ==========================================
@@ -155,5 +155,5 @@ service TicketService {
   rpc UnderwriteReleaseSeat(ReleaseSeatReq) returns(ReleaseSeatResp);
 
   // 获取BitMap信息
-  rpc GetSeatBitMap(GetSeatBitMapReq) returns(GetEventListResp);
+  rpc GetSeatBitMap(GetSeatBitMapReq) returns(GetSeatBitMapResp);
 }

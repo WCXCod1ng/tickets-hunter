@@ -55,7 +55,7 @@ type TicketServiceClient interface {
 	// 兜底释放座位，差别在于Redis段会调用underwriteUnlockSeat
 	UnderwriteReleaseSeat(ctx context.Context, in *ReleaseSeatReq, opts ...grpc.CallOption) (*ReleaseSeatResp, error)
 	// 获取BitMap信息
-	GetSeatBitMap(ctx context.Context, in *GetSeatBitMapReq, opts ...grpc.CallOption) (*GetEventListResp, error)
+	GetSeatBitMap(ctx context.Context, in *GetSeatBitMapReq, opts ...grpc.CallOption) (*GetSeatBitMapResp, error)
 }
 
 type ticketServiceClient struct {
@@ -156,9 +156,9 @@ func (c *ticketServiceClient) UnderwriteReleaseSeat(ctx context.Context, in *Rel
 	return out, nil
 }
 
-func (c *ticketServiceClient) GetSeatBitMap(ctx context.Context, in *GetSeatBitMapReq, opts ...grpc.CallOption) (*GetEventListResp, error) {
+func (c *ticketServiceClient) GetSeatBitMap(ctx context.Context, in *GetSeatBitMapReq, opts ...grpc.CallOption) (*GetSeatBitMapResp, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetEventListResp)
+	out := new(GetSeatBitMapResp)
 	err := c.cc.Invoke(ctx, TicketService_GetSeatBitMap_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -189,7 +189,7 @@ type TicketServiceServer interface {
 	// 兜底释放座位，差别在于Redis段会调用underwriteUnlockSeat
 	UnderwriteReleaseSeat(context.Context, *ReleaseSeatReq) (*ReleaseSeatResp, error)
 	// 获取BitMap信息
-	GetSeatBitMap(context.Context, *GetSeatBitMapReq) (*GetEventListResp, error)
+	GetSeatBitMap(context.Context, *GetSeatBitMapReq) (*GetSeatBitMapResp, error)
 	mustEmbedUnimplementedTicketServiceServer()
 }
 
@@ -227,7 +227,7 @@ func (UnimplementedTicketServiceServer) ReleaseSeat(context.Context, *ReleaseSea
 func (UnimplementedTicketServiceServer) UnderwriteReleaseSeat(context.Context, *ReleaseSeatReq) (*ReleaseSeatResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method UnderwriteReleaseSeat not implemented")
 }
-func (UnimplementedTicketServiceServer) GetSeatBitMap(context.Context, *GetSeatBitMapReq) (*GetEventListResp, error) {
+func (UnimplementedTicketServiceServer) GetSeatBitMap(context.Context, *GetSeatBitMapReq) (*GetSeatBitMapResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSeatBitMap not implemented")
 }
 func (UnimplementedTicketServiceServer) mustEmbedUnimplementedTicketServiceServer() {}

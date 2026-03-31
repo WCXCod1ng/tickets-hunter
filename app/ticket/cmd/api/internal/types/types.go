@@ -19,6 +19,16 @@ type EventListResp struct {
 	Total int64       `json:"total"`
 }
 
+type SeatBitMapReq struct {
+	EventId int64  `form:"event_id,optional" validate:"required,min=1"`
+	Section string `form:"section" validate:"required,min=1"`
+}
+
+type SeatBitMapResp struct {
+	Layout string `json:"layout"` // 座位图布局信息，例如行数、列数等
+	BitMap string `json:"bitmap"` // 使用字符串表示座位状态的BitMap
+}
+
 type SeatInfo struct {
 	Id       int64   `json:"id"`
 	SeatType int64   `json:"seat_type"` // 1普通 2VIP 3内场

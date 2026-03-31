@@ -39,6 +39,14 @@ type (
 	SeatListResp {
 		List []SeatInfo `json:"list"`
 	}
+	SeatBitMapReq {
+		EventId int64  `form:"event_id,optional" validate:"required,min=1"`
+		Section string `form:"section" validate:"required,min=1"`
+	}
+	SeatBitMapResp {
+		Layout string `json:"layout"` // 座位图布局信息，例如行数、列数等
+		BitMap string `json:"bitmap"` // 使用字符串表示座位状态的BitMap
+	}
 )
 
 @server (
@@ -53,5 +61,9 @@ service ticket-api {
 	@doc "获取指定场次的座位图及状态"
 	@handler getSeatList
 	get /seats (SeatListReq) returns (SeatListResp)
+
+	@doc "获取指定场次的座位图（BitMap形式）及状态"
+	@handler getSeatBitMap
+	get /seats/bitmap (SeatBitMapReq) returns (SeatBitMapResp)
 }
 

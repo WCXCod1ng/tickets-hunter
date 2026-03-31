@@ -149,7 +149,7 @@ func (c *OrderCreateConsumerJob) consume(ctx context.Context, data []byte) error
 	c.notifyFrontend(ctx, msg.OrderSn, "success")
 	c.Logger.Infof("create order success, order_sn = %s", orderMain.OrderSn)
 
-	return nil
+	return nil // commit offset automatically
 }
 
 func (c *OrderCreateConsumerJob) notifyFrontend(ctx context.Context, sn string, s string) {

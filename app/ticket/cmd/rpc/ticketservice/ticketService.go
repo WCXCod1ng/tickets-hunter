@@ -52,7 +52,7 @@ type (
 		// 兜底释放座位，差别在于Redis段会调用underwriteUnlockSeat
 		UnderwriteReleaseSeat(ctx context.Context, in *ReleaseSeatReq, opts ...grpc.CallOption) (*ReleaseSeatResp, error)
 		// 获取BitMap信息
-		GetSeatBitMap(ctx context.Context, in *GetSeatBitMapReq, opts ...grpc.CallOption) (*GetEventListResp, error)
+		GetSeatBitMap(ctx context.Context, in *GetSeatBitMapReq, opts ...grpc.CallOption) (*GetSeatBitMapResp, error)
 	}
 
 	defaultTicketService struct {
@@ -121,7 +121,7 @@ func (m *defaultTicketService) UnderwriteReleaseSeat(ctx context.Context, in *Re
 }
 
 // 获取BitMap信息
-func (m *defaultTicketService) GetSeatBitMap(ctx context.Context, in *GetSeatBitMapReq, opts ...grpc.CallOption) (*GetEventListResp, error) {
+func (m *defaultTicketService) GetSeatBitMap(ctx context.Context, in *GetSeatBitMapReq, opts ...grpc.CallOption) (*GetSeatBitMapResp, error) {
 	client := rpc.NewTicketServiceClient(m.cli.Conn())
 	return client.GetSeatBitMap(ctx, in, opts...)
 }

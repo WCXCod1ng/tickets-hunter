@@ -78,7 +78,7 @@ func (s *TicketServiceServer) UnderwriteReleaseSeat(ctx context.Context, in *rpc
 }
 
 // 获取BitMap信息
-func (s *TicketServiceServer) GetSeatBitMap(ctx context.Context, in *rpc.GetSeatBitMapReq) (*rpc.GetEventListResp, error) {
+func (s *TicketServiceServer) GetSeatBitMap(ctx context.Context, in *rpc.GetSeatBitMapReq) (*rpc.GetSeatBitMapResp, error) {
 	l := logic.NewGetSeatBitMapLogic(ctx, s.svcCtx)
 	return l.GetSeatBitMap(in)
 }

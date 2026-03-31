@@ -5,6 +5,7 @@ import (
 	"tickets-hunter/app/model/ticket_seat"
 	"tickets-hunter/app/ticket/cmd/rpc/internal/config"
 	"tickets-hunter/common/luaexec"
+	"tickets-hunter/common/serialize"
 
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
@@ -23,6 +24,9 @@ type ServiceContext struct {
 	UnlockSeatLuaScript *luaexec.LuaScript
 	// 兜底的解锁Lua脚本
 	UnderwriteUnlockSeatScript *luaexec.LuaScript
+
+	// 序列化依赖
+	Serializer serialize.Serializer
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -36,5 +40,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		LockSeatLuaScript:          luaexec.NewLuaScript(luaexec.MustLoadLuaFile("internal/lua/lockSeatScript.lua")),
 		UnlockSeatLuaScript:        luaexec.NewLuaScript(luaexec.MustLoadLuaFile("internal/lua/unlockSeatScript.lua")),
 		UnderwriteUnlockSeatScript: luaexec.NewLuaScript(luaexec.MustLoadLuaFile("internal/lua/underwriteUnlockSeatScript.lua")),
+		Serializer:                 serialize.JSONSerializer{},
 	}
 }

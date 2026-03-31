@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"fmt"
 	"tickets-hunter/app/model/ticket_seat"
 	redis2 "tickets-hunter/common/redis"
 	"time"
@@ -99,7 +100,31 @@ func (l *WarmUpValidSeatsLogic) WarmUpValidSeats(in *rpc.WarmUpValidSeatsReq) (*
 	for _, seat := range seats {
 		sectionMap[seat.Section] = append(sectionMap[seat.Section], seat)
 	}
-	for section, seatIndexes := range sectionMap {
+	for section, sectionSeats := range sectionMap {
+		// 插入静态座位布局信息
+		sectionStaticInfoKey := redis2.SectionSeatStaticInfoRedisKey(in.EventId, section)
+		value := map[string]interface{}{}
+		for _, seat := range sectionSeats {
+			id := fmt.Sprintf("%d", seat.Id)
+			value[id] = map[string]interface{}{
+				"row_no":     seat.RowNo,
+				"seat_no":    seat.SeatNo,
+				"price":      seat.Price,
+				"seat_type":  seat.SeatType,
+				"seat_index": seat.SeatIndex,
+			}
+		}
+
+		valueString, err := l.svcCtx.Serializer.Marshal(value)
+		if err != nil {
+			l.Logger.Error(err)
+		}
+
+		if err = l.svcCtx.Redis.SetexCtx(l.ctx, sectionStaticInfoKey, string(valueString), int(time.Until(ticketEvent.SaleEndTime.Add(3*time.Hour)).Seconds())); err != nil {
+			l.Logger.Error(err)
+		}
+
+		// 插入座位状态的BitMap
 		redisKey := redis2.SeatBitMapRedisKey(in.EventId, section)
 
 		// 删除旧缓存
@@ -110,12 +135,12 @@ func (l *WarmUpValidSeatsLogic) WarmUpValidSeats(in *rpc.WarmUpValidSeatsReq) (*
 		totalCached := 0
 		batchSize := 1000
 		if err := l.svcCtx.Redis.PipelinedCtx(l.ctx, func(pipe redis.Pipeliner) error {
-			for i := 0; i < len(seatIndexes); i += batchSize {
+			for i := 0; i < len(sectionSeats); i += batchSize {
 				end := i + batchSize
-				if end > len(seatIndexes) {
-					end = len(seatIndexes)
+				if end > len(sectionSeats) {
+					end = len(sectionSeats)
 				}
-				for _, seat := range seatIndexes[i:end] {
+				for _, seat := range sectionSeats[i:end] {
 					var bitValue int
 					if seat.Status == ticket_seat.SeatStatusAvailable {
 						bitValue = 0

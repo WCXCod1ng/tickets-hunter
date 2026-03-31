@@ -27,6 +27,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/seats",
 				Handler: ticket.GetSeatListHandler(serverCtx),
 			},
+			{
+				// 获取指定场次的座位图（BitMap形式）及状态
+				Method:  http.MethodGet,
+				Path:    "/seats/bitmap",
+				Handler: ticket.GetSeatBitMapHandler(serverCtx),
+			},
 		},
 		rest.WithPrefix("/ticket/v1"),
 	)
